@@ -1,0 +1,17 @@
+appdirs
+arrow
+bw2parameters
+docopt
+docutils
+jinja2
+lxml
+numpy
+pandas
+psutil
+pyprind
+pytest
+stats_arrays
+toolz
+voluptuous
+wrapt
+https://github.com/OcelotProject/Ocelot/tarball/master
