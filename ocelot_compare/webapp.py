@@ -1,3 +1,5 @@
+from . import cache
+from .comparison import *
 from flask import Flask, render_template
 import os
 
@@ -7,16 +9,14 @@ templates = os.path.join(os.path.dirname(__file__), "web", "templates")
 app = Flask("oc", static_folder=static, template_folder=templates)
 
 
-class Cache:
-    reference = []
-    run = []
-
-cache = Cache()
-
-
 @app.route("/")
 def index():
-    print(len(cache.reference), len(cache.run))
-    if not (cache.reference and cache.run):
-        raise ValueError("Must populate reference and run caches first")
-    return render_template("index.html")
+    if not (cache.given and cache.run):
+        raise ValueError("Must populate given reference and run caches first")
+    kwargs = {
+        "hv_production": skipped_high_voltage_production_mixes(),
+        "missing_given": missing_given(),
+        "missing_model": missing_model(),
+        "in_both": in_both(),
+    }
+    return render_template("index.html", **kwargs)

@@ -3,7 +3,7 @@
 """Ocelot-compare CLI interface.
 
 Usage:
-  compare-cli <run_id> <ref_dirpath>
+  compare-cli <run_id> <ref_dirpath> [--debug]
 
 Options:
   --list             List the updates needed, but don't do anything
@@ -12,17 +12,19 @@ Options:
 
 """
 from docopt import docopt
-from ocelot_compare.webapp import app, cache
+from ocelot_compare import cache
+from ocelot_compare.comparison import prepare_loaded_data
 from ocelot_compare.filesystem import (
     load_model_run,
     load_cached_datasets,
     create_reference_result,
 )
+from ocelot_compare.webapp import app
 import threading
 import webbrowser
 
 
-def run_flask_app(host="127.0.0.1", port="5000", debug=True):
+def run_flask_app(host="127.0.0.1", port="5000", debug=False):
     url = "http://{}:{}".format(host, port)
     threading.Timer(1., lambda: webbrowser.open_new_tab(url)).start()
     app.run(
@@ -40,12 +42,13 @@ def main():
             print("Loading results")
             cache.run = load_model_run(args['<run_id>'])
             try:
-                cache.reference = load_cached_datasets(args['<ref_dirpath>'])
+                cache.given = load_cached_datasets(args['<ref_dirpath>'])
             except AssertionError:
                 create_reference_result(args['<ref_dirpath>'])
-                cache.reference = load_cached_datasets(args['<ref_dirpath>'])
+                cache.given = load_cached_datasets(args['<ref_dirpath>'])
 
-        run_flask_app()
+        prepare_loaded_data()
+        run_flask_app(debug=args['--debug'])
     except KeyboardInterrupt:
         print("Terminating Ocelot comparison interface")
         sys.exit(1)
