@@ -6,7 +6,7 @@ root_dir = os.path.dirname(__file__)
 if root_dir:
     os.chdir(root_dir)
 
-for dirpath, dirnames, filenames in os.walk('ocelot'):
+for dirpath, dirnames, filenames in os.walk('ocelot_compare'):
     # Ignore dirnames that start with '.'
     if '__init__.py' in filenames:
         pkg = dirpath.replace(os.path.sep, '.')
@@ -30,7 +30,7 @@ setup(
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license=open('LICENSE.txt').read(),
-    package_data={'ocelot_compare': package_files(os.path.join('ocelot', 'data'))},
+    package_data={'ocelot_compare': package_files(os.path.join('ocelot_compare', 'web'))},
     entry_points = {
         'console_scripts': [
             'ocelot-compare = ocelot_compare.bin.cli:main',
