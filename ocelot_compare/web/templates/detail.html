@@ -9,4 +9,64 @@
 <p>Activity {% if not given %}not {% endif %}found in reference database</p>
 
 <p><a href="{{ model['log_url'] }}">Log messages</a></p>
+
+{% if given %}
+<p>Pass</p>
+{% else %}
+<h1>Exchanges</h1>
+<table class="table" data-filtering="true" data-sorting="true">
+    <thead>
+        <tr>
+            <th data-breakpoints="xs" data-type="number">Amount</th>
+            <th data-breakpoints="xs">Name</th>
+            <th data-breakpoints="xs">Compar.</th>
+            <th data-breakpoints="xs">Subcom.</th>
+            <th data-breakpoints="xs">Unit</th>
+            <th data-breakpoints="xs">Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for exc in model['exchanges'] %}
+        <tr>
+            <td>{{ exc['amount'] }}</td>
+            <td>{{ exc['name'] }}</td>
+            <td>{{ exc.get('compartment', '') }}</td>
+            <td>{{ exc.get('subcompartment', '') }}</td>
+            <td>{{ exc['unit'] }}</td>
+            <td>{{ exc['type'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h1>Parameters</h1>
+<table class="table" data-filtering="true" data-sorting="true">
+    <thead>
+        <tr>
+            <th data-breakpoints="xs" data-type="number">Amount</th>
+            <th data-breakpoints="xs">Name</th>
+            <th data-breakpoints="xs">Formula</th>
+            <th data-breakpoints="xs">Variable</th>
+            <th data-breakpoints="xs">Unit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in model['parameters'] %}
+        <tr>
+            <td>{{ p['amount'] }}</td>
+            <td>{{ p['name'] }}</td>
+            <td>{{ p.get('formula', '') }}</td>
+            <td>{{ p.get('variable', '') }}</td>
+            <td>{{ p['unit'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script type="text/javascript">
+jQuery(function($){
+    $('.table').footable();
+});
+</script>
 {% endblock %}
