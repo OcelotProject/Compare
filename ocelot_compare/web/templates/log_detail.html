@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Ocelot log details for activity dataset</h1>
+<h2>Name: {{ ds['name'] }}</h2>
+
+<ul>
+{% for msg in messages %}
+<li><b>{{ msg['function'] }}</b>: {{ msg['message'] }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

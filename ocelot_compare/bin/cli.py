@@ -40,7 +40,8 @@ def main():
 
         if not cache.run:
             print("Loading results")
-            cache.run = load_model_run(args['<run_id>'])
+            cache.run_id = args['<run_id>']
+            cache.run = load_model_run(cache.run_id)
             try:
                 cache.given = load_cached_datasets(args['<ref_dirpath>'])
             except AssertionError:

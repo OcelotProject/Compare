@@ -15,7 +15,7 @@
     <tbody>
         {% for ds in missing_given %}
         <tr>
-            <td><a href="https://news.ycombinator.com/">{{ ds['name'] }}</a></td>
+            <td><a href="{{ ds['url'] }}">{{ ds['name'] }}</a></td>
             <td>{{ ds['reference product'] }}</td>
             <td>{{ ds['location'] }}</td>
             <td>{{ ds['exchanges']|length }}</td>
@@ -50,7 +50,7 @@
 <table class="table" data-paging="true" data-filtering="true" data-sorting="true">
     <thead>
         <tr>
-            <th data-breakpoints="xs">Activity</th>
+            <th data-type="html" data-sort-use="text" data-breakpoints="xs">Activity</th>
             <th data-breakpoints="xs">Product</th>
             <th data-breakpoints="xs">Location</th>
             <th data-breakpoints="xs" data-type="number"># Exchanges</th>
@@ -60,7 +60,7 @@
     <tbody>
         {% for ds in in_both %}
         <tr>
-            <td>{{ ds['name'] }}</td>
+            <td><a href="{{ ds['url'] }}">{{ ds['name'] }}</a></td>
             <td>{{ ds['reference product'] }}</td>
             <td>{{ ds['location'] }}</td>
             <td>{{ ds['exchanges']|length }}</td>

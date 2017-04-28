@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Ocelot model run activity dataset</h1>
+<h2>Name: {{ model['name'] }}</h2>
+<h2>Reference product: {{ model['reference product'] }}</h2>
+<h2>Location: {{ model['location'] }}</h2>
+
+<p>Activity {% if not given %}not {% endif %}found in reference database</p>
+
+<p><a href="{{ model['log_url'] }}">Log messages</a></p>
+{% endblock %}

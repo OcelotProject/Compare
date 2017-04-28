@@ -15,7 +15,7 @@ def missing_model():
 
 
 def in_both():
-    for k, v in cache.given.items():
-        if k in cache.run:
-            v['similarity'] = similarity_index(v, cache.run[k])
+    for k, v in cache.run.items():
+        if k in cache.given:
+            v['similarity'] = similarity_index(v, cache.given[k])
             yield v

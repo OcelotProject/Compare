@@ -2,6 +2,7 @@ from ocelot.filesystem import __io_version__
 from ocelot.io import extract_directory
 import appdirs
 import hashlib
+import json
 import os
 import pickle
 
@@ -42,6 +43,19 @@ def load_model_run(run_id):
     assert os.path.isfile(fp)
     with open(fp, "rb") as f:
         return pickle.load(f)
+
+
+def load_detailed_log(run_id):
+    """Return the model run data"""
+    fp = os.path.join(
+        ocelot_base_dir(),
+        "model-runs",
+        run_id,
+        "detailed.log.json"
+    )
+    assert os.path.isfile(fp)
+    for line in open(fp, encoding='utf-8'):
+        yield json.loads(line)
 
 
 def create_reference_result(data_path, use_mp=True):
