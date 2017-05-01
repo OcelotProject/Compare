@@ -1,6 +1,6 @@
 /*
 * FooTable v3 - FooTable is a jQuery plugin that aims to make HTML tables on smaller devices look awesome.
-* @version 3.0.8
+* @version 3.1.4
 * @link http://fooplugins.com
 * @copyright Steven Usher & Brad Vincent 2015
 * @license Released under the GPLv3 license.
@@ -20,8 +20,6 @@
 		options = options || {};
 		// make sure we only work with tables
 		return this.filter('table').each(function (i, tbl) {
-			var ft = F.get(tbl);
-			if (ft instanceof F.Table) ft.destroy();
 			F.init(tbl, options, ready);
 		});
 	};
@@ -71,7 +69,25 @@
 	 * @returns {FooTable.Table}
 	 */
 	F.init = function(table, options, ready){
+		var ft = F.get(table);
+		if (ft instanceof F.Table) ft.destroy();
 		return new F.Table(table, options, ready);
+	};
+
+	/**
+	 * Gets the FooTable.Row instance for the supplied element.
+	 * @param {(jQuery|jQuery.selector|HTMLTableElement)} element - A jQuery object, selector or the HTMLElement of an element to retrieve the FooTable.Row for.
+	 * @returns {FooTable.Row}
+	 */
+	F.getRow = function(element){
+		// to get the FooTable.Row object simply walk up the DOM, find the TR and grab the __FooTableRow__ data value
+		var $row = $(element).closest('tr');
+		// if this is a detail row get the previous row in the table to get the main TR element
+		if ($row.hasClass('footable-detail-row')){
+			$row = $row.prev();
+		}
+		// grab the row object
+		return $row.data('__FooTableRow__');
 	};
 
 	// The below are external type definitions mainly used as pointers to jQuery docs for important information
@@ -529,14 +545,6 @@
 		return F.is.string(value) ? value.length === 0 : true;
 	};
 
-	/**
-	 * Whether or not we are on a mobile device.
-	 */
-	F.is.mobile = (function(a){
-		return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)
-		||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)));
-	})(navigator.userAgent||navigator.vendor||window.opera);
-
 })(FooTable);
 (function (F) {
 	/**
@@ -551,13 +559,27 @@
 	 * @function contains
 	 * @param {string} str - The string to check.
 	 * @param {string} contains - The string to check for.
-	 * @param {boolean} [ignoreCase] - Whether or not to ignore casing when performing the check.
+	 * @param {boolean} [ignoreCase=false] - Whether or not to ignore casing when performing the check.
 	 * @returns {boolean}
 	 */
 	F.str.contains = function (str, contains, ignoreCase) {
-		return !F.is.emptyString(str)
-			&& !F.is.emptyString(contains) && contains.length <= str.length
+		if (F.is.emptyString(str) || F.is.emptyString(contains)) return false;
+		return contains.length <= str.length
 			&& (ignoreCase ? str.toUpperCase().indexOf(contains.toUpperCase()) : str.indexOf(contains)) !== -1;
+	};
+
+	/**
+	 * Checks if the supplied string contains the exact given substring.
+	 * @memberof FooTable.str
+	 * @function contains
+	 * @param {string} str - The string to check.
+	 * @param {string} contains - The string to check for.
+	 * @param {boolean} [ignoreCase=false] - Whether or not to ignore casing when performing the check.
+	 * @returns {boolean}
+	 */
+	F.str.containsExact = function (str, contains, ignoreCase) {
+		if (F.is.emptyString(str) || F.is.emptyString(contains) || contains.length > str.length) return false;
+		return new RegExp('\\b'+ F.str.escapeRegExp(contains)+'\\b', ignoreCase ? 'i' : '').test(str);
 	};
 
 	/**
@@ -566,7 +588,7 @@
 	 * @function containsWord
 	 * @param {string} str - The string to check.
 	 * @param {string} word - The word to check for.
-	 * @param {boolean} [ignoreCase] - Whether or not to ignore casing when performing the check.
+	 * @param {boolean} [ignoreCase=false] - Whether or not to ignore casing when performing the check.
 	 * @returns {boolean}
 	 */
 	F.str.containsWord = function(str, word, ignoreCase){
@@ -588,7 +610,8 @@
 	 * @returns {string}
 	 */
 	F.str.from = function (str, from) {
-		return this.contains(str, from) ? str.substring(str.indexOf(from) + 1) : str;
+		if (F.is.emptyString(str)) return str;
+		return F.str.contains(str, from) ? str.substring(str.indexOf(from) + 1) : str;
 	};
 
 	/**
@@ -600,6 +623,7 @@
 	 * @returns {boolean}
 	 */
 	F.str.startsWith = function (str, prefix) {
+		if (F.is.emptyString(str)) return str == prefix;
 		return str.slice(0, prefix.length) == prefix;
 	};
 
@@ -611,9 +635,10 @@
 	 * @returns {string}
 	 */
 	F.str.toCamelCase = function (str) {
+		if (F.is.emptyString(str)) return str;
 		if (str.toUpperCase() === str) return str.toLowerCase();
 		return str.replace(/^([A-Z])|[-\s_](\w)/g, function (match, p1, p2) {
-			if (p2) return p2.toUpperCase();
+			if (F.is.string(p2)) return p2.toUpperCase();
 			return p1.toLowerCase();
 		});
 	};
@@ -632,10 +657,13 @@
 
 	/**
 	 * Escapes a string for use in a regular expression.
+	 * @memberof FooTable.str
+	 * @function escapeRegExp
 	 * @param {string} str - The string to escape.
 	 * @returns {string}
 	 */
 	F.str.escapeRegExp = function(str){
+		if (F.is.emptyString(str)) return str;
 		return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	};
 
@@ -836,16 +864,34 @@
 		/**
 		 * Creates new instances of all registered classes using there priority and the supplied arguments to return them in an array.
 		 * @instance
+		 * @param {object} subs - An object containing classes to substitute on load.
 		 * @param {*} arg1 - The first argument to supply when creating new instances of all registered classes.
 		 * @param {*} [argN...] - Any number of additional arguments to supply when creating new instances of all registered classes.
 		 * @returns {Array.<FooTable.Class>}
 		 * @this FooTable.ClassFactory
 		 */
-		load: function(arg1, argN){
-			var self = this, args = Array.prototype.slice.call(arguments), reg = [], loaded = [];
-			for (var name in self.registered){
+		load: function(subs, arg1, argN){
+			var self = this, args = Array.prototype.slice.call(arguments), reg = [], loaded = [], name, klass;
+			subs = args.shift() || {};
+			for (name in self.registered){
 				if (!self.registered.hasOwnProperty(name)) continue;
-				reg.push(self.registered[name]);
+				var component = self.registered[name];
+				if (subs.hasOwnProperty(name)){
+					klass = subs[name];
+					if (F.is.string(klass)) klass = F.getFnPointer(subs[name]);
+					if (F.is.fn(klass)){
+						component = {name: name, klass: klass, priority: self.registered[name].priority};
+					}
+				}
+				reg.push(component);
+			}
+			for (name in subs){
+				if (!subs.hasOwnProperty(name) || self.registered.hasOwnProperty(name)) continue;
+				klass = subs[name];
+				if (F.is.string(klass)) klass = F.getFnPointer(subs[name]);
+				if (F.is.fn(klass)){
+					reg.push({name: name, klass: klass, priority: 0});
+				}
 			}
 			reg.sort(function(a, b){ return b.priority - a.priority; });
 			F.arr.each(reg, function(r){
@@ -903,7 +949,9 @@
 		if (F.is.emptyString(cssText)) return {};
 		var json = {}, props = cssText.split(';'), pair, key, value;
 		for (var i = 0, i_len = props.length; i < i_len; i++){
+			if (F.is.emptyString(props[i])) continue;
 			pair = props[i].split(':');
+			if (F.is.emptyString(pair[0]) || F.is.emptyString(pair[1])) continue;
 			key = F.str.toCamelCase($.trim(pair[0]));
 			value = $.trim(pair[1]);
 			json[key] = value;
@@ -913,14 +961,17 @@
 
 	/**
 	 * Attempts to retrieve a function pointer using the given name.
-	 * @protected
 	 * @param {string} functionName - The name of the function to fetch a pointer to.
 	 * @returns {(function|object|null)}
 	 */
 	F.getFnPointer = function(functionName){
 		if (F.is.emptyString(functionName)) return null;
-		if (F.is.fn(window[functionName])) return window[functionName];
-		return null;
+		var pointer = window,
+			parts = functionName.split('.');
+		F.arr.each(parts, function(part){
+			if (pointer[part]) pointer = pointer[part];
+		});
+		return F.is.fn(pointer) ? pointer : null;
 	};
 
 	/**
@@ -1066,11 +1117,12 @@
 		collapse: function(){
 			if (!this.created) return;
 			this.$detail.children('th').html(this.column.title);
-			this.$detail.children('td').first()
-				.attr('class', this.$el.attr('class'))
-				.attr('style', this.$el.attr('style'))
+			this.$el.clone()
+				.attr('id', this.$el.attr('id') ? this.$el.attr('id') + '-detail' : undefined)
 				.css('display', 'table-cell')
-				.append(this.$el.contents().detach());
+				.html('')
+				.append(this.$el.contents().detach())
+				.replaceAll(this.$detail.children('td').first());
 
 			if (!F.is.jq(this.$detail.parent()))
 				this.$detail.appendTo(this.row.$details.find('.footable-details > tbody'));
@@ -1302,7 +1354,7 @@
 		 * @this FooTable.Column
 		 */
 		$create: function(){
-			(this.$el = !this.virtual && F.is.jq(this.$el) ? this.$el : $('<th/>')).html(this.title);
+			(this.$el = !this.virtual && F.is.jq(this.$el) ? this.$el : $('<th/>')).html(this.title).addClass(this.classes.join(' ')).css(this.style);
 		},
 		/**
 		 * This is supplied either the cell value or jQuery object to parse. Any value can be returned from this method and will be provided to the {@link FooTable.Column#format} function
@@ -1314,7 +1366,10 @@
 		 * @this FooTable.Column
 		 */
 		parser: function(valueOrElement){
-			if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)) return $(valueOrElement).data('value') || $(valueOrElement).text(); // use jQuery to get the value
+			if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)){ // use jQuery to get the value
+				var data = $(valueOrElement).data('value');
+				return F.is.defined(data) ? data : $(valueOrElement).html();
+			}
 			if (F.is.defined(valueOrElement) && valueOrElement != null) return valueOrElement+''; // use the native toString of the value
 			return null; // otherwise we have no value so return null
 		},
@@ -1348,6 +1403,81 @@
 	F.columns = new F.ClassFactory();
 
 	F.columns.register('text', F.Column);
+
+})(jQuery, FooTable);
+(function ($, F) {
+
+	F.Component = F.Class.extend(/** @lends FooTable.Component */{
+		/**
+		 * The base class for all FooTable components.
+		 * @constructs
+		 * @extends FooTable.Class
+		 * @param {FooTable.Table} instance - The parent {@link FooTable.Table} object for the component.
+		 * @param {boolean} enabled - Whether or not the component is enabled.
+		 * @throws {TypeError} The instance parameter must be an instance of {@link FooTable.Table}.
+		 * @returns {FooTable.Component}
+		 */
+		construct: function (instance, enabled) {
+			if (!(instance instanceof F.Table))
+				throw new TypeError('The instance parameter must be an instance of FooTable.Table.');
+
+			/**
+			 * The parent {@link FooTable.Table} for the component.
+			 * @type {FooTable.Table}
+			 */
+			this.ft = instance;
+			/**
+			 * Whether or not this component is enabled. Disabled components only have there preinit method called allowing for this value to be overridden.
+			 * @type {boolean}
+			 */
+			this.enabled = F.is.boolean(enabled) ? enabled : false;
+		},
+		/**
+		 * The preinit method is called during the parent {@link FooTable.Table} constructor call.
+		 * @param {object} data - The jQuery.data() object of the root table.
+		 * @instance
+		 * @protected
+		 * @function
+		 */
+		preinit: function(data){},
+		/**
+		 * The init method is called during the parent {@link FooTable.Table} constructor call.
+		 * @instance
+		 * @protected
+		 * @function
+		 */
+		init: function(){},
+		/**
+		 * This method is called from the {@link FooTable.Table#destroy} method.
+		 * @instance
+		 * @protected
+		 * @function
+		 */
+		destroy: function(){},
+		/**
+		 * This method is called from the {@link FooTable.Table#draw} method.
+		 * @instance
+		 * @protected
+		 * @function
+		 */
+		predraw: function(){},
+		/**
+		 * This method is called from the {@link FooTable.Table#draw} method.
+		 * @instance
+		 * @protected
+		 * @function
+		 */
+		draw: function(){},
+		/**
+		 * This method is called from the {@link FooTable.Table#draw} method.
+		 * @instance
+		 * @protected
+		 * @function
+		 */
+		postdraw: function(){}
+	});
+
+	F.components = new F.ClassFactory();
 
 })(jQuery, FooTable);
 (function ($, F) {
@@ -1544,9 +1674,10 @@
 		 * Using this method also allows us to supply an object containing options and the data for the row at the same time.
 		 * @instance
 		 * @param {object} [data] - The data to set for the row. If not supplied the current value of the row is returned.
+		 * @param {boolean} [redraw=true] - Whether or not to redraw the row once the value has been set.
 		 * @returns {(*|undefined)}
 		 */
-		val: function(data){
+		val: function(data, redraw){
 			var self = this;
 			if (!F.is.hash(data)){
 				// get - check the value property and build it from the cells if required.
@@ -1572,7 +1703,19 @@
 			this.expanded = this.o.expanded;
 			this.classes = F.is.array(this.o.classes) ? this.o.classes : (F.is.string(this.o.classes) ? this.o.classes.match(/\S+/g) : []);
 			this.style = F.is.hash(this.o.style) ? this.o.style : (F.is.string(this.o.style) ? F.css2json(this.o.style) : {});
-			this.value = isObj ? (hasOptions ? data.value : data) : null;
+			if (isObj) {
+				if ( hasOptions ) data = data.value;
+				if (F.is.hash(this.value)){
+					for (var prop in data) {
+						if (!data.hasOwnProperty(prop)) continue;
+						this.value[prop] = data[prop];
+					}
+				} else {
+					this.value = data;
+				}
+			} else {
+				this.value = null;
+			}
 
 			F.arr.each(this.cells, function(cell){
 				if (F.is.defined(self.value[cell.column.name])) cell.val(self.value[cell.column.name], false);
@@ -1581,7 +1724,7 @@
 			if (this.created){
 				this._setClasses(this.$el);
 				this._setStyle(this.$el);
-				this.draw();
+				if (F.is.boolean(redraw) ? redraw : true) this.draw();
 			}
 		},
 		_setClasses: function($el){
@@ -1620,7 +1763,7 @@
 			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
 			 * @param {FooTable.Row} row - The row about to be expanded.
 			 */
-			self.ft.raise('expand.ft.row').then(function(){
+			self.ft.raise('expand.ft.row',[self]).then(function(){
 				self.__hidden__ = F.arr.map(self.cells, function(cell){
 					return cell.column.hidden && cell.column.visible ? cell : null;
 				});
@@ -1642,20 +1785,21 @@
 		/**
 		 * Sets the current row to a collapsed state removing the detail row if it exists.
 		 * @instance
-		 * @this FooTable.Row
+		 * @param {boolean} [setExpanded] - Whether or not to set the {@link FooTable.Row#expanded} property to false.
+		 * @fires FooTable.Row#"collapse.ft.row"
 		 */
 		collapse: function(setExpanded){
 			if (!this.created) return;
 			var self = this;
 			/**
-			 * The expand.ft.row event is raised before the the row is expanded.
-			 * Calling preventDefault on this event will stop the row being expanded.
-			 * @event FooTable.Row#"expand.ft.row"
+			 * The collapse.ft.row event is raised before the the row is collapsed.
+			 * Calling preventDefault on this event will stop the row being collapsed.
+			 * @event FooTable.Row#"collapse.ft.row"
 			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
 			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
 			 * @param {FooTable.Row} row - The row about to be expanded.
 			 */
-			self.ft.raise('collapse.ft.row').then(function(){
+			self.ft.raise('collapse.ft.row',[self]).then(function(){
 				F.arr.each(self.__hidden__, function(cell){
 					cell.restore();
 				});
@@ -1668,15 +1812,17 @@
 		/**
 		 * Prior to drawing this moves the details contents back to there original cells and detaches the toggle element from the row.
 		 * @instance
+		 * @param {boolean} [detach] - Whether or not to detach the row.
 		 * @this FooTable.Row
 		 */
-		predraw: function(){
+		predraw: function(detach){
 			if (this.created){
 				if (this.expanded){
 					this.collapse(false);
 				}
 				this.$toggle.detach();
-				this.$el.detach();
+				detach = F.is.boolean(detach) ? detach : true;
+				if (detach) this.$el.detach();
 			}
 		},
 		/**
@@ -1695,6 +1841,13 @@
 						|| (self.ft.rows.toggleColumn == 'last' && cell.column.index == self.ft.columns.lastVisibleIndex)) {
 						cell.$el.prepend(self.$toggle);
 					}
+				}
+				cell.$el.add(cell.column.$el).removeClass('footable-first-visible footable-last-visible');
+				if (cell.column.index == self.ft.columns.firstVisibleIndex){
+					cell.$el.add(cell.column.$el).addClass('footable-first-visible');
+				}
+				if (cell.column.index == self.ft.columns.lastVisibleIndex){
+					cell.$el.add(cell.column.$el).addClass('footable-last-visible');
 				}
 			});
 			if (this.expanded){
@@ -1729,6 +1882,7 @@
 	});
 
 })(jQuery, FooTable);
+
 (function ($, F) {
 
 	/**
@@ -1778,11 +1932,23 @@
 			 */
 			this.$el = (F.is.jq(element) ? element : $(element)).first(); // ensure one table, one instance
 			/**
+			 * A loader jQuery instance
+			 * @instance
+			 * @type {jQuery}
+			 */
+			this.$loader = $('<div/>', { 'class': 'footable-loader' }).append($('<span/>', {'class': 'fooicon fooicon-loader'}));
+			/**
 			 * The options for the plugin. This is a merge of user defined options and the default options.
 			 * @instance
 			 * @type {object}
 			 */
 			this.o = $.extend(true, {}, F.defaults, options);
+			/**
+			 * The jQuery data object for the table at initialization.
+			 * @instance
+			 * @type {object}
+			 */
+			this.data = this.$el.data() || {};
 			/**
 			 * An array of all CSS classes on the table that do not start with "footable".
 			 * @instance
@@ -1799,11 +1965,7 @@
 			 * @prop {Array.<FooTable.Component>} core - The core components for the plugin. These are executed either after the internal components in the initialize phase or before them in the destroy phase of the plugin.
 			 * @prop {Array.<FooTable.Component>} custom - The custom components for the plugin. These are executed either after the core components in the initialize phase or before them in the destroy phase of the plugin.
 			 */
-			this.components = {
-				internal: F.components.internal.load(this),//[this.breakpoints, this.columns, this.editor, this.rows],
-				core: F.components.core.load(this),
-				custom: F.components.load(this)
-			};
+			this.components = F.components.load((F.is.hash(this.data.components) ? this.data.components : this.o.components), this);
 			/**
 			 * The breakpoints component for this instance of the plugin.
 			 * @instance
@@ -1824,14 +1986,37 @@
 			this.rows = this.use(FooTable.Rows);
 
 			//END MEMBERS
+			this._construct(ready);
+		},
+		/**
+		 * Once all properties are set this performs the actual initialization of the plugin calling the {@link FooTable.Table#_preinit} and
+		 * {@link FooTable.Table#_init} methods as well as raising the {@link FooTable.Table#"ready.ft.table"} event.
+		 * @this FooTable.Table
+		 * @instance
+		 * @param {function} [ready] - A callback function to execute once the plugin is initialized.
+		 * @private
+		 * @returns {jQuery.Promise}
+		 * @fires FooTable.Table#"ready.ft.table"
+		 */
+		_construct: function(ready){
 			var self = this;
-			self._preinit().then(function(){
-				return self._init().then(function(){
-					if (F.is.fn(ready)) ready.call(self, self);
-				});
-			}).fail(function(err){
-				if (F.is.error(err)){
-					console.error('FooTable: unhandled error thrown during initialization.', err);
+			this._preinit().then(function(){
+				return self._init();
+			}).always(function(arg){
+				self.$el.show();
+				if (F.is.error(arg)){
+					console.error('FooTable: unhandled error thrown during initialization.', arg);
+				} else {
+					/**
+					 * The postinit.ft.table event is raised after the plugin has been initialized and the table drawn.
+					 * Calling preventDefault on this event will stop the ready callback being executed.
+					 * @event FooTable.Table#"postinit.ft.table"
+					 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+					 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+					 */
+					return self.raise('ready.ft.table').then(function(){
+						if (F.is.fn(ready)) ready.call(self, self);
+					});
 				}
 			});
 		},
@@ -1850,25 +2035,22 @@
 			 * @event FooTable.Table#"preinit.ft.table"
 			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
 			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+			 * @param {object} data - The jQuery data object from the root table element.
 			 */
-			return this.raise('preinit.ft.table').then(function(){
-				var classes = self.$el.attr('class').match(/\S+/g),
-					data = self.$el.data() || {};
+			return this.raise('preinit.ft.table', [self.data]).then(function(){
+				var classes = (self.$el.attr('class') || '').match(/\S+/g) || [];
 
-				self.o.ajax = F.checkFnValue(self, data.ajax, self.o.ajax);
-				self.o.stopPropagation = F.is.boolean(data.stopPropagation)
-					? data.stopPropagation
+				self.o.ajax = F.checkFnValue(self, self.data.ajax, self.o.ajax);
+				self.o.stopPropagation = F.is.boolean(self.data.stopPropagation)
+					? self.data.stopPropagation
 					: self.o.stopPropagation;
 
 				for (var i = 0, len = classes.length; i < len; i++){
 					if (!F.str.startsWith(classes[i], 'footable')) self.classes.push(classes[i]);
 				}
-				var $loader = $('<div/>', { 'class': 'footable-loader' }).append($('<span/>', {'class': 'fooicon fooicon-loader'}));
-				self.$el.hide().after($loader);
-				return self.execute(false, false, 'preinit', data).always(function(){
-					self.$el.show();
-					$loader.remove();
-				});
+
+				self.$el.hide().after(self.$loader);
+				return self.execute(false, false, 'preinit', self.data);
 			});
 		},
 		/**
@@ -1901,7 +2083,18 @@
 					self.$el.data('__FooTable__', self);
 					if ($tfoot.children('tr').length == 0) $tfoot.remove();
 					if ($thead.children('tr').length == 0) $thead.remove();
-					return self.draw().then(function(){
+
+					/**
+					 * The postinit.ft.table event is raised after any components are initialized but before the table is
+					 * drawn for the first time.
+					 * Calling preventDefault on this event will disable the initial drawing of the table.
+					 * @event FooTable.Table#"postinit.ft.table"
+					 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+					 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+					 */
+					return self.raise('postinit.ft.table').then(function(){
+						return self.draw();
+					}).always(function(){
 						$(window).off('resize.ft'+self.id, self._onWindowResize)
 							.on('resize.ft'+self.id, { self: self }, self._onWindowResize);
 						self.initialized = true;
@@ -1926,8 +2119,9 @@
 			 */
 			return self.raise('destroy.ft.table').then(function(){
 				return self.execute(true, true, 'destroy').then(function () {
-					self.$el.removeData('__FooTable__');
+					self.$el.removeData('__FooTable__').removeClass('footable-' + self.id);
 					if (F.is.hash(self.o.on)) self.$el.off(self.o.on);
+					$(window).off('resize.ft'+self.id, self._onWindowResize);
 					self.initialized = false;
 				});
 			}).fail(function(err){
@@ -1970,9 +2164,8 @@
 		 * @returns {(*|null)}
 		 */
 		use: function(type){
-			var components = this.components.internal.concat(this.components.core, this.components.custom);
-			for (var i = 0, len = components.length; i < len; i++){
-				if (components[i] instanceof type) return components[i];
+			for (var i = 0, len = this.components.length; i < len; i++){
+				if (this.components[i] instanceof type) return this.components[i];
 			}
 			return null;
 		},
@@ -1988,6 +2181,13 @@
 		 */
 		draw: function () {
 			var self = this;
+
+			// Clone the current table and insert it into the original's place
+			var $elCopy = self.$el.clone().insertBefore(self.$el);
+
+			// Detach `self.$el` from the DOM, retaining its event handlers
+			self.$el.detach();
+
 			// when drawing the order that the components are executed is important so chain the methods but use promises to retain async safety.
 			return self.execute(false, true, 'predraw').then(function(){
 				/**
@@ -2021,6 +2221,10 @@
 				if (F.is.error(err)){
 					console.error('FooTable: unhandled error thrown during a draw operation.', err);
 				}
+			}).always(function(){
+				// Replace the copy that we added above with the modified `self.$el`
+				$elCopy.replaceWith(self.$el);
+				self.$loader.remove();
 			});
 		},
 		/**
@@ -2039,20 +2243,9 @@
 			var self = this, args = Array.prototype.slice.call(arguments);
 			reverse = args.shift();
 			enabled = args.shift();
-			var internal = enabled ? F.arr.get(self.components.internal, function(c){ return c.enabled; }) : self.components.internal.slice(0),
-				core = enabled ? F.arr.get(self.components.core, function(c){ return c.enabled; }) : self.components.core.slice(0),
-				custom = enabled ? F.arr.get(self.components.custom, function(c){ return c.enabled; }) : self.components.custom.slice(0);
-
-			args.unshift(reverse ? custom.reverse() : internal);
-			return self._execute.apply(self, args).then(function(){
-				args.shift();
-				args.unshift(reverse ? core.reverse() : core);
-				return self._execute.apply(self, args).then(function(){
-					args.shift();
-					args.unshift(reverse ? internal.reverse() : custom);
-					return self._execute.apply(self, args);
-				});
-			});
+			var components = enabled ? F.arr.get(self.components, function(c){ return c.enabled; }) : self.components.slice(0);
+			args.unshift(reverse ? components.reverse() : components);
+			return self._execute.apply(self, args);
 		},
 		/**
 		 * Executes the specified method with the optional number of parameters on all supplied components waiting for the result of each before executing the next.
@@ -2153,7 +2346,8 @@
 		 */
 		parser: function(valueOrElement){
 			if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)){
-				valueOrElement = $(valueOrElement).data('value') || $(valueOrElement).text();
+				var data = $(valueOrElement).data('value');
+				valueOrElement = F.is.defined(data) ? data : $(valueOrElement).text();
 				if (F.is.string(valueOrElement)) valueOrElement = isNaN(valueOrElement) ? valueOrElement : +valueOrElement;
 			}
 			if (F.is.date(valueOrElement)) return moment(valueOrElement);
@@ -2181,7 +2375,7 @@
 		 * @this FooTable.DateColumn
 		 */
 		formatter: function(value){
-			return F.is.object(value) && F.is.boolean(value._isAMomentObject) ? value.format(this.formatString) : '';
+			return F.is.object(value) && F.is.boolean(value._isAMomentObject) && value.isValid() ? value.format(this.formatString) : '';
 		},
 		/**
 		 * This is supplied either the cell value or jQuery object to parse. A string value must be returned from this method and will be used during filtering operations.
@@ -2221,6 +2415,7 @@
 	F.columns.register('date', F.DateColumn);
 
 })(jQuery, FooTable);
+
 (function($, F){
 
 	F.HTMLColumn = F.Column.extend(/** @lends FooTable.HTMLColumn */{
@@ -2241,7 +2436,7 @@
 		 * @instance
 		 * @protected
 		 * @param {(*|jQuery)} valueOrElement - The value or jQuery cell object.
-		 * @returns {(number|null)}
+		 * @returns {(jQuery|null)}
 		 * @this FooTable.HTMLColumn
 		 */
 		parser: function(valueOrElement){
@@ -2249,7 +2444,10 @@
 			if (F.is.element(valueOrElement)) valueOrElement = $(valueOrElement);
 			if (F.is.jq(valueOrElement)){
 				var tagName = valueOrElement.prop('tagName').toLowerCase();
-				if (tagName == 'td' || tagName == 'th') return valueOrElement.data('value') || valueOrElement.contents();
+				if (tagName == 'td' || tagName == 'th'){
+					var data = valueOrElement.data('value');
+					return F.is.defined(data) ? data : valueOrElement.contents();
+				}
 				return valueOrElement;
 			}
 			return null;
@@ -2273,7 +2471,7 @@
 		construct: function(instance, definition){
 			this._super(instance, definition, 'number');
 			this.decimalSeparator = F.is.string(definition.decimalSeparator) ? definition.decimalSeparator : '.';
-			this.thousandSeparator = F.is.string(definition.thousandSeparator) ? definition.thousandSeparator : '.';
+			this.thousandSeparator = F.is.string(definition.thousandSeparator) ? definition.thousandSeparator : ',';
 			this.decimalSeparatorRegex = new RegExp(F.str.escapeRegExp(this.decimalSeparator), 'g');
 			this.thousandSeparatorRegex = new RegExp(F.str.escapeRegExp(this.thousandSeparator), 'g');
 			this.cleanRegex = new RegExp('[^0-9' + F.str.escapeRegExp(this.decimalSeparator) + ']', 'g');
@@ -2289,7 +2487,8 @@
 		 */
 		parser: function(valueOrElement){
 			if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)){
-				valueOrElement = $(valueOrElement).data('value') || $(valueOrElement).text().replace(this.cleanRegex, '');
+				var data = $(valueOrElement).data('value');
+				valueOrElement = F.is.defined(data) ? data : $(valueOrElement).text().replace(this.cleanRegex, '');
 			}
 			if (F.is.string(valueOrElement)){
 				valueOrElement = valueOrElement.replace(this.thousandSeparatorRegex, '').replace(this.decimalSeparatorRegex, '.');
@@ -2318,82 +2517,6 @@
 	});
 
 	F.columns.register('number', F.NumberColumn);
-
-})(jQuery, FooTable);
-(function ($, F) {
-
-	F.Component = F.Class.extend(/** @lends FooTable.Component */{
-		/**
-		 * The base class for all FooTable components.
-		 * @constructs
-		 * @extends FooTable.Class
-		 * @param {FooTable.Table} instance - The parent {@link FooTable.Table} object for the component.
-		 * @param {boolean} enabled - Whether or not the component is enabled.
-		 * @throws {TypeError} The instance parameter must be an instance of {@link FooTable.Table}.
-		 * @returns {FooTable.Component}
-		 */
-		construct: function (instance, enabled) {
-			if (!(instance instanceof F.Table))
-				throw new TypeError('The instance parameter must be an instance of FooTable.Table.');
-
-			/**
-			 * The parent {@link FooTable.Table} for the component.
-			 * @type {FooTable.Table}
-			 */
-			this.ft = instance;
-			/**
-			 * Whether or not this component is enabled. Disabled components only have there preinit method called allowing for this value to be overridden.
-			 * @type {boolean}
-			 */
-			this.enabled = F.is.boolean(enabled) ? enabled : false;
-		},
-		/**
-		 * The preinit method is called during the parent {@link FooTable.Table} constructor call.
-		 * @param {object} data - The jQuery.data() object of the root table.
-		 * @instance
-		 * @protected
-		 * @function
-		 */
-		preinit: null,
-		/**
-		 * The init method is called during the parent {@link FooTable.Table} constructor call.
-		 * @instance
-		 * @protected
-		 * @function
-		 */
-		init: null,
-		/**
-		 * This method is called from the {@link FooTable.Table#destroy} method.
-		 * @instance
-		 * @protected
-		 */
-		destroy: null,
-		/**
-		 * This method is called from the {@link FooTable.Table#draw} method.
-		 * @instance
-		 * @protected
-		 * @function
-		 */
-		predraw: null,
-		/**
-		 * This method is called from the {@link FooTable.Table#draw} method.
-		 * @instance
-		 * @protected
-		 * @function
-		 */
-		draw: null,
-		/**
-		 * This method is called from the {@link FooTable.Table#draw} method.
-		 * @instance
-		 * @protected
-		 * @function
-		 */
-		postdraw: null
-	});
-
-	F.components = new F.ClassFactory();
-	F.components.core = new F.ClassFactory();
-	F.components.internal = new F.ClassFactory();
 
 })(jQuery, FooTable);
 (function($, F){
@@ -2661,12 +2784,11 @@
 		 * @returns {number}
 		 */
 		getViewportWidth: function(){
-			var ratio = F.is.defined(window.devicePixelRatio) && F.is.mobile ? window.devicePixelRatio : 1;
-			return Math.max(document.documentElement.clientWidth, window.innerWidth, 0) / ratio;
+			return Math.max(document.documentElement.clientWidth, window.innerWidth, 0);
 		}
 	});
 
-	F.components.internal.register('breakpoints', F.Breakpoints, 10);
+	F.components.register('breakpoints', F.Breakpoints, 1000);
 
 })(jQuery, FooTable);
 (function(F){
@@ -2759,6 +2881,8 @@
 			 * @type {boolean}
 			 */
 			this.showHeader = table.o.showHeader;
+
+			this._fromHTML = F.is.emptyArray(table.o.columns) && !F.is.promise(table.o.columns);
 		},
 
 		/* PROTECTED */
@@ -2810,9 +2934,7 @@
 
 				var json = [], html = [];
 				// get the column options from the content
-				var $header = self.ft.$el.find('tr.footable-header'), $cell, cdata;
-				if ($header.length == 0) $header = self.ft.$el.find('thead > tr:last:has([data-breakpoints])');
-				if ($header.length == 0) $header = self.ft.$el.find('tbody > tr:first:has([data-breakpoints])');
+				var $header = self.ft.$el.find('tr.footable-header, thead > tr:last:has([data-breakpoints]), tbody > tr:first:has([data-breakpoints]), thead > tr:last, tbody > tr:first').first(), $cell, cdata;
 				if ($header.length > 0){
 					var virtual = $header.parent().is('tbody') && $header.children().length == $header.children('td').length;
 					if (!virtual) self.$header = $header.addClass('footable-header');
@@ -2827,7 +2949,7 @@
 					if (virtual) self.showHeader = false;
 				}
 				// get the supplied column options
-				if (F.is.array(self.o.columns)){
+				if (F.is.array(self.o.columns) && !F.is.emptyArray(self.o.columns)){
 					F.arr.each(self.o.columns, function(c, i){
 						c.index = i;
 						json.push(c);
@@ -2917,6 +3039,25 @@
 			});
 		},
 		/**
+		 * Destroys the columns component removing any UI generated from the table.
+		 * @instance
+		 * @protected
+		 * @fires FooTable.Columns#"destroy.ft.columns"
+		 */
+		destroy: function(){
+			/**
+			 * The destroy.ft.columns event is raised before its UI is removed.
+			 * Calling preventDefault on this event will prevent the component from being destroyed.
+			 * @event FooTable.Columns#"destroy.ft.columns"
+			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+			 */
+			var self = this;
+			this.ft.raise('destroy.ft.columns').then(function(){
+				if (!self._fromHTML) self.$header.remove();
+			});
+		},
+		/**
 		 * The predraw method called from within the {@link FooTable.Table#draw} method.
 		 * @instance
 		 * @protected
@@ -2940,6 +3081,7 @@
 				}
 				if (col.hidden) self.hasHidden = true;
 			});
+			self.ft.$el.toggleClass('breakpoint', self.hasHidden);
 		},
 		/**
 		 * Performs the actual drawing of the columns, hiding or displaying them depending on there breakpoints.
@@ -3014,7 +3156,7 @@
 		}
 	});
 
-	F.components.internal.register('columns', F.Columns, 5);
+	F.components.register('columns', F.Columns, 900);
 
 })(jQuery, FooTable);
 (function(F){
@@ -3104,10 +3246,16 @@
 			 */
 			this.expandFirst = table.o.expandFirst;
 			/**
+			 * Whether or not all row details are expanded by default when displayed on a device that hides any columns.
+			 * @type {boolean}
+			 */
+			this.expandAll = table.o.expandAll;
+			/**
 			 * The jQuery object that contains the empty row control.
 			 * @type {jQuery}
 			 */
 			this.$empty = null;
+			this._fromHTML = F.is.emptyArray(table.o.rows) && !F.is.promise(table.o.rows);
 		},
 		/**
 		 * This parses the rows from either the tables rows or the supplied options.
@@ -3119,10 +3267,7 @@
 			var self = this;
 			return $.Deferred(function(d){
 				var $rows = self.ft.$el.children('tbody').children('tr');
-				if (F.is.jq($rows)){
-					self.parseFinalize(d, $rows);
-					$rows.detach();
-				} else if (F.is.array(self.o.rows) && self.o.rows.length > 0){
+				if (F.is.array(self.o.rows) && self.o.rows.length > 0){
 					self.parseFinalize(d, self.o.rows);
 				} else if (F.is.promise(self.o.rows)){
 					self.o.rows.then(function(rows){
@@ -3130,6 +3275,9 @@
 					}, function(xhr){
 						d.reject(Error('Rows ajax request error: ' + xhr.status + ' (' + xhr.statusText + ')'));
 					});
+				} else if (F.is.jq($rows)){
+					self.parseFinalize(d, $rows);
+					$rows.detach();
 				} else {
 					self.parseFinalize(d, []);
 				}
@@ -3176,6 +3324,7 @@
 					if (self.toggleColumn != "first" && self.toggleColumn != "last") self.toggleColumn = "first";
 					self.emptyString = F.is.string(data.empty) ? data.empty : self.emptyString;
 					self.expandFirst = F.is.boolean(data.expandFirst) ? data.expandFirst : self.expandFirst;
+					self.expandAll = F.is.boolean(data.expandAll) ? data.expandAll : self.expandAll;
 				});
 			});
 		},
@@ -3197,6 +3346,27 @@
 			 */
 			return self.ft.raise('init.ft.rows', [self.all]).then(function(){
 				self.$create();
+			});
+		},
+		/**
+		 * Destroys the rows component removing any UI generated from the table.
+		 * @instance
+		 * @protected
+		 * @fires FooTable.Rows#"destroy.ft.rows"
+		 */
+		destroy: function(){
+			/**
+			 * The destroy.ft.rows event is raised before its UI is removed.
+			 * Calling preventDefault on this event will prevent the component from being destroyed.
+			 * @event FooTable.Rows#"destroy.ft.rows"
+			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+			 */
+			var self = this;
+			this.ft.raise('destroy.ft.rows').then(function(){
+				F.arr.each(self.array, function(row){
+					row.predraw(!self._fromHTML);
+				});
 			});
 		},
 		/**
@@ -3225,7 +3395,7 @@
 				self.$empty.detach();
 				// loop through them appending to the tbody and then drawing
 				F.arr.each(self.array, function(row){
-					if (self.expandFirst && first){
+					if ((self.expandFirst && first) || self.expandAll){
 						row.expanded = true;
 						first = false;
 					}
@@ -3236,10 +3406,45 @@
 				self.$empty.children('td').attr('colspan', self.ft.columns.visibleColspan);
 				$tbody.append(self.$empty);
 			}
+		},
+		/**
+		 * Loads a JSON array of row objects into the table
+		 * @instance
+		 * @param {Array.<object>} data - An array of row objects to load.
+		 * @param {boolean} [append=false] - Whether or not to append the new rows to the current rows array or to replace them entirely.
+		 */
+		load: function(data, append){
+			var self = this, rows = $.map(data, function(r){
+				return new F.Row(self.ft, self.ft.columns.array, r);
+			});
+			F.arr.each(this.array, function(row){
+				row.predraw();
+			});
+			this.all = (F.is.boolean(append) ? append : false) ? this.all.concat(rows) : rows;
+			this.array = this.all.slice(0);
+			this.ft.draw();
+		},
+		/**
+		 * Expands all visible rows.
+		 * @instance
+		 */
+		expand: function(){
+			F.arr.each(this.array, function(row){
+				row.expand();
+			});
+		},
+		/**
+		 * Collapses all visible rows.
+		 * @instance
+		 */
+		collapse: function(){
+			F.arr.each(this.array, function(row){
+				row.collapse();
+			});
 		}
 	});
 
-	F.components.internal.register('rows', F.Rows, 0);
+	F.components.register('rows', F.Rows, 800);
 
 })(jQuery, FooTable);
 (function(F){
@@ -3283,6 +3488,22 @@
 	 * @type {boolean}
 	 */
 	F.Defaults.prototype.expandFirst = false;
+
+	/**
+	 * Whether or not all row details are expanded by default when displayed on a device that hides any columns.
+	 * @type {boolean}
+	 */
+	F.Defaults.prototype.expandAll = false;
+})(FooTable);
+(function(F){
+	/**
+	 * Loads a JSON array of row objects into the table
+	 * @param {Array.<object>} data - An array of row objects to load.
+	 * @param {boolean} [append=false] - Whether or not to append the new rows to the current rows array or to replace them entirely.
+	 */
+	F.Table.prototype.loadRows = function(data, append){
+		this.rows.load(data, append);
+	};
 })(FooTable);
 (function(F){
 	F.Filter = F.Class.extend(/** @lends FooTable.Filter */{
@@ -3291,13 +3512,15 @@
 		 * @constructs
 		 * @extends FooTable.Class
 		 * @param {string} name - The name for the filter.
-		 * @param {string} query - The query for the filter.
+		 * @param {(string|FooTable.Query)} query - The query for the filter.
 		 * @param {Array.<FooTable.Column>} columns - The columns to apply the query to.
 		 * @param {string} [space="AND"] - How the query treats space chars.
 		 * @param {boolean} [connectors=true] - Whether or not to replace phrase connectors (+.-_) with spaces.
+		 * @param {boolean} [ignoreCase=true] - Whether or not ignore case when matching.
+		 * @param {boolean} [hidden=true] - Whether or not this is a hidden filter.
 		 * @returns {FooTable.Filter}
 		 */
-		construct: function(name, query, columns, space, connectors){
+		construct: function(name, query, columns, space, connectors, ignoreCase, hidden){
 			/**
 			 * The name of the filter.
 			 * @instance
@@ -3317,11 +3540,23 @@
 			 */
 			this.connectors = F.is.boolean(connectors) ? connectors : true;
 			/**
+			 * Whether or not ignore case when matching.
+			 * @instance
+			 * @type {boolean}
+			 */
+			this.ignoreCase = F.is.boolean(ignoreCase) ? ignoreCase : true;
+			/**
+			 * Whether or not this is a hidden filter.
+			 * @instance
+			 * @type {boolean}
+			 */
+			this.hidden = F.is.boolean(hidden) ? hidden : false;
+			/**
 			 * The query for the filter.
 			 * @instance
 			 * @type {(string|FooTable.Query)}
 			 */
-			this.query = new F.Query(query, this.space, this.connectors);
+			this.query = query instanceof F.Query ? query : new F.Query(query, this.space, this.connectors, this.ignoreCase);
 			/**
 			 * The columns to apply the query to.
 			 * @instance
@@ -3339,7 +3574,7 @@
 		match: function(str){
 			if (!F.is.string(str)) return false;
 			if (F.is.string(this.query)){
-				this.query = new F.Query(this.query, this.space, this.connectors);
+				this.query = new F.Query(this.query, this.space, this.connectors, this.ignoreCase);
 			}
 			return this.query instanceof F.Query ? this.query.match(str) : false;
 		},
@@ -3403,11 +3638,28 @@
 			 */
 			this.connectors = table.o.filtering.connectors;
 			/**
+			 * Whether or not ignore case when matching.
+			 * @instance
+			 * @type {boolean}
+			 */
+			this.ignoreCase = table.o.filtering.ignoreCase;
+			/**
+			 * Whether or not search queries are treated as phrases when matching.
+			 * @instance
+			 * @type {boolean}
+			 */
+			this.exactMatch = table.o.filtering.exactMatch;
+			/**
 			 * The placeholder text to display within the search $input.
 			 * @instance
 			 * @type {string}
 			 */
 			this.placeholder = table.o.filtering.placeholder;
+			/**
+			 * The title to display at the top of the search input column select.
+			 * @type {string}
+			 */
+			this.dropdownTitle = table.o.filtering.dropdownTitle;
 			/**
 			 * The position of the $search input within the filtering rows cell.
 			 * @type {string}
@@ -3452,6 +3704,13 @@
 			 * @type {?number}
 			 */
 			this._filterTimeout = null;
+			/**
+			 * The regular expression used to check for encapsulating quotations.
+			 * @instance
+			 * @private
+			 * @type {RegExp}
+			 */
+			this._exactRegExp = /^"(.*?)"$/;
 		},
 
 		/* PROTECTED */
@@ -3472,7 +3731,7 @@
 			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
 			 * @param {object} data - The jQuery data object of the table raising the event.
 			 */
-			this.ft.raise('preinit.ft.filtering').then(function(){
+			return self.ft.raise('preinit.ft.filtering').then(function(){
 				// first check if filtering is enabled via the class being applied
 				if (self.ft.$el.hasClass('footable-filtering'))
 					self.enabled = true;
@@ -3496,6 +3755,14 @@
 					? data.filterConnectors
 					: self.connectors;
 
+				self.ignoreCase = F.is.boolean(data.filterIgnoreCase)
+					? data.filterIgnoreCase
+					: self.ignoreCase;
+
+				self.exactMatch = F.is.boolean(data.filterExactMatch)
+					? data.filterExactMatch
+					: self.exactMatch;
+
 				self.delay = F.is.number(data.filterDelay)
 					? data.filterDelay
 					: self.delay;
@@ -3503,6 +3770,10 @@
 				self.placeholder = F.is.string(data.filterPlaceholder)
 					? data.filterPlaceholder
 					: self.placeholder;
+
+				self.dropdownTitle = F.is.string(data.filterDropdownTitle)
+					? data.filterDropdownTitle
+					: self.dropdownTitle;
 
 				self.filters = F.is.array(data.filterFilters)
 					? self.ensure(data.filterFilters)
@@ -3537,7 +3808,7 @@
 			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
 			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
 			 */
-			this.ft.raise('init.ft.filtering').then(function(){
+			return self.ft.raise('init.ft.filtering').then(function(){
 				self.$create();
 			}, function(){
 				self.enabled = false;
@@ -3558,7 +3829,7 @@
 			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
 			 */
 			var self = this;
-			this.ft.raise('destroy.ft.filtering').then(function(){
+			return self.ft.raise('destroy.ft.filtering').then(function(){
 				self.ft.$el.removeClass('footable-filtering')
 					.find('thead > tr.footable-filtering').remove();
 			});
@@ -3572,7 +3843,7 @@
 		$create: function () {
 			var self = this;
 			// generate the cell that actually contains all the UI.
-			var $form_grp = $('<div/>', {'class': 'form-group'})
+			var $form_grp = $('<div/>', {'class': 'form-group footable-filtering-search'})
 					.append($('<label/>', {'class': 'sr-only', text: 'Search'})),
 				$input_grp = $('<div/>', {'class': 'input-group'}).appendTo($form_grp),
 				$input_grp_btn = $('<div/>', {'class': 'input-group-btn'}),
@@ -3599,7 +3870,11 @@
 				.on('click', { self: self }, self._onSearchButtonClicked)
 				.append($('<span/>', {'class': 'fooicon fooicon-search'}));
 
-			self.$dropdown = $('<ul/>', {'class': 'dropdown-menu dropdown-menu-right'}).append(
+			self.$dropdown = $('<ul/>', {'class': 'dropdown-menu dropdown-menu-right'});
+			if (!F.is.emptyString(self.dropdownTitle)){
+				self.$dropdown.append($('<li/>', {'class': 'dropdown-header','text': self.dropdownTitle}));
+			}
+			self.$dropdown.append(
 				F.arr.map(self.ft.columns.array, function (col) {
 					return col.filterable ? $('<li/>').append(
 						$('<a/>', {'class': 'checkbox'}).append(
@@ -3612,7 +3887,7 @@
 			);
 
 			if (self.delay > 0){
-				self.$input.on('keypress keyup', { self: self }, self._onSearchInputChanged);
+				self.$input.on('keypress keyup paste', { self: self }, self._onSearchInputChanged);
 				self.$dropdown.on('click', 'input[type="checkbox"]', {self: self}, self._onSearchColumnClicked);
 			}
 
@@ -3640,55 +3915,77 @@
 		 */
 		draw: function(){
 			this.$cell.attr('colspan', this.ft.columns.visibleColspan);
+			var search = this.find('search');
+			if (search instanceof F.Filter){
+				var query = search.query.val();
+				if (this.exactMatch && this._exactRegExp.test(query)){
+					query = query.replace(this._exactRegExp, '$1');
+				}
+				this.$input.val(query);
+			} else {
+				this.$input.val(null);
+			}
+			this.setButton(!F.arr.any(this.filters, function(f){ return !f.hidden; }));
 		},
 
 		/* PUBLIC */
 		/**
 		 * Adds or updates the filter using the supplied name, query and columns.
-		 * @param {string} name - The name for the filter.
-		 * @param {(string|FooTable.Query)} query - The query for the filter.
-		 * @param {(Array.<number>|Array.<string>|Array.<FooTable.Column>)} columns - The columns to apply the filter to.
+		 * @instance
+		 * @param {(string|FooTable.Filter|object)} nameOrFilter - The name for the filter or the actual filter object itself.
+		 * @param {(string|FooTable.Query)} [query] - The query for the filter. This is only optional when the first parameter is a filter object.
+		 * @param {(Array.<number>|Array.<string>|Array.<FooTable.Column>)} [columns] - The columns to apply the filter to.
+		 * 	If not supplied the filter will be applied to all selected columns in the search input dropdown.
+		 * @param {boolean} [ignoreCase=true] - Whether or not ignore case when matching.
+		 * @param {boolean} [connectors=true] - Whether or not to replace phrase connectors (+.-_) with spaces.
+		 * @param {string} [space="AND"] - How the query treats space chars.
+		 * @param {boolean} [hidden=true] - Whether or not this is a hidden filter.
 		 */
-		addFilter: function(name, query, columns){
-			var f = F.arr.first(this.filters, function(f){ return f.name == name; });
+		addFilter: function(nameOrFilter, query, columns, ignoreCase, connectors, space, hidden){
+			var f = this.createFilter(nameOrFilter, query, columns, ignoreCase, connectors, space, hidden);
 			if (f instanceof F.Filter){
-				f.name = name;
-				f.query = query;
-				f.columns = columns;
-			} else {
-				this.filters.push({name: name, query: query, columns: columns});
+				this.removeFilter(f.name);
+				this.filters.push(f);
 			}
 		},
 		/**
 		 * Removes the filter using the supplied name if it exists.
+		 * @instance
 		 * @param {string} name - The name of the filter to remove.
 		 */
 		removeFilter: function(name){
 			F.arr.remove(this.filters, function(f){ return f.name == name; });
 		},
 		/**
-		 * Creates a new search filter from the supplied parameters and applies it to the rows. If no parameters are supplied the current search input value
-		 * and selected columns are used to create or update the search filter. If there is no search input value then the search filter is removed.
+		 * Performs the required steps to handle filtering including the raising of the {@link FooTable.Filtering#"before.ft.filtering"} and {@link FooTable.Filtering#"after.ft.filtering"} events.
 		 * @instance
-		 * @param {string} [query] - The query to filter the rows by.
-		 * @param {(Array.<string>|Array.<number>|Array.<FooTable.Column>)} [columns] - The columns to apply the filter to in each row.
 		 * @returns {jQuery.Promise}
 		 * @fires FooTable.Filtering#"before.ft.filtering"
 		 * @fires FooTable.Filtering#"after.ft.filtering"
 		 */
-		filter: function(query, columns){
-			if (F.is.undef(query)){
-				query = $.trim(this.$input.val() || '');
-			} else {
-				this.$input.val(query);
-			}
-			if (!F.is.emptyString(query)) {
-				this.addFilter('search', query, columns);
-			} else {
-				this.removeFilter('search');
-			}
-			this.$button.children('.fooicon').removeClass('fooicon-search').addClass('fooicon-remove');
-			return this._filter();
+		filter: function(){
+			var self = this;
+			self.filters = self.ensure(self.filters);
+			/**
+			 * The before.ft.filtering event is raised before a filter is applied and allows listeners to modify the filter or cancel it completely by calling preventDefault on the jQuery.Event object.
+			 * @event FooTable.Filtering#"before.ft.filtering"
+			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+			 * @param {Array.<FooTable.Filter>} filters - The filters that are about to be applied.
+			 */
+			return self.ft.raise('before.ft.filtering', [self.filters]).then(function(){
+				self.filters = self.ensure(self.filters);
+				return self.ft.draw().then(function(){
+					/**
+					 * The after.ft.filtering event is raised after a filter has been applied.
+					 * @event FooTable.Filtering#"after.ft.filtering"
+					 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+					 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+					 * @param {FooTable.Filter} filter - The filters that were applied.
+					 */
+					self.ft.raise('after.ft.filtering', [self.filters]);
+				});
+			});
 		},
 		/**
 		 * Removes the current search filter.
@@ -3698,10 +3995,28 @@
 		 * @fires FooTable.Filtering#"after.ft.filtering"
 		 */
 		clear: function(){
-			this.$button.children('.fooicon').removeClass('fooicon-remove').addClass('fooicon-search');
-			this.$input.val(null);
-			this.removeFilter('search');
-			return this._filter();
+			this.filters = F.arr.get(this.filters, function(f){ return f.hidden; });
+			return this.filter();
+		},
+		/**
+		 * Toggles the button icon between the search and clear icons based on the supplied value.
+		 * @instance
+		 * @param {boolean} search - Whether or not to display the search icon.
+		 */
+		setButton: function(search){
+			if (!search){
+				this.$button.children('.fooicon').removeClass('fooicon-search').addClass('fooicon-remove');
+			} else {
+				this.$button.children('.fooicon').removeClass('fooicon-remove').addClass('fooicon-search');
+			}
+		},
+		/**
+		 * Finds a filter by name.
+		 * @param {string} name - The name of the filter to find.
+		 * @returns {(FooTable.Filter|null)}
+		 */
+		find: function(name){
+			return F.arr.first(this.filters, function(f){ return f.name == name; });
 		},
 		/**
 		 * Gets an array of {@link FooTable.Column} to apply the search filter to. This also doubles as the default columns for filters which do not specify any columns.
@@ -3730,48 +4045,47 @@
 			var self = this, parsed = [], filterable = self.columns();
 			if (!F.is.emptyArray(filters)){
 				F.arr.each(filters, function(f){
-					if (F.is.object(f) && (!F.is.emptyString(f.query) || f.query instanceof F.Query)) {
-						f.name = F.is.emptyString(f.name) ? 'anon' : f.name;
-						f.columns = F.is.emptyArray(f.columns) ? filterable : self.ft.columns.ensure(f.columns);
-						parsed.push(f instanceof F.Filter ? f : new F.Filter(f.name, f.query, f.columns, self.space, self.connectors));
-					}
+					f = self._ensure(f, filterable);
+					if (f instanceof F.Filter) parsed.push(f);
 				});
 			}
 			return parsed;
 		},
 
-		/* PRIVATE */
 		/**
-		 * Performs the required steps to handle filtering including the raising of the {@link FooTable.Filtering#"before.ft.filtering"} and {@link FooTable.Filtering#"after.ft.filtering"} events.
+		 * Creates a new filter using the supplied object or individual parameters to populate it.
 		 * @instance
-		 * @private
-		 * @returns {jQuery.Promise}
-		 * @fires FooTable.Filtering#"before.ft.filtering"
-		 * @fires FooTable.Filtering#"after.ft.filtering"
+		 * @param {(string|FooTable.Filter|object)} nameOrObject - The name for the filter or the actual filter object itself.
+		 * @param {(string|FooTable.Query)} [query] - The query for the filter. This is only optional when the first parameter is a filter object.
+		 * @param {(Array.<number>|Array.<string>|Array.<FooTable.Column>)} [columns] - The columns to apply the filter to.
+		 * 	If not supplied the filter will be applied to all selected columns in the search input dropdown.
+		 * @param {boolean} [ignoreCase=true] - Whether or not ignore case when matching.
+		 * @param {boolean} [connectors=true] - Whether or not to replace phrase connectors (+.-_) with spaces.
+		 * @param {string} [space="AND"] - How the query treats space chars.
+		 * @param {boolean} [hidden=true] - Whether or not this is a hidden filter.
+		 * @returns {*}
 		 */
-		_filter: function(){
-			var self = this;
-			self.filters = self.ensure(self.filters);
-			/**
-			 * The before.ft.filtering event is raised before a filter is applied and allows listeners to modify the filter or cancel it completely by calling preventDefault on the jQuery.Event object.
-			 * @event FooTable.Filtering#"before.ft.filtering"
-			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
-			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
-			 * @param {Array.<FooTable.Filter>} filters - The filters that are about to be applied.
-			 */
-			return self.ft.raise('before.ft.filtering', [self.filters]).then(function(){
-				self.filters = self.ensure(self.filters);
-				return self.ft.draw().then(function(){
-					/**
-					 * The after.ft.filtering event is raised after a filter has been applied.
-					 * @event FooTable.Filtering#"after.ft.filtering"
-					 * @param {jQuery.Event} e - The jQuery.Event object for the event.
-					 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
-					 * @param {FooTable.Filter} filter - The filters that were applied.
-					 */
-					self.ft.raise('after.ft.filtering', [self.filters]);
-				});
-			});
+		createFilter: function(nameOrObject, query, columns, ignoreCase, connectors, space, hidden){
+			if (F.is.string(nameOrObject)){
+				nameOrObject = {name: nameOrObject, query: query, columns: columns, ignoreCase: ignoreCase, connectors: connectors, space: space, hidden: hidden};
+			}
+			return this._ensure(nameOrObject, this.columns());
+		},
+
+		/* PRIVATE */
+		_ensure: function(filter, selectedColumns){
+			if ((F.is.hash(filter) || filter instanceof F.Filter) && !F.is.emptyString(filter.name) && (!F.is.emptyString(filter.query) || filter.query instanceof F.Query)){
+				filter.columns = F.is.emptyArray(filter.columns) ? selectedColumns : this.ft.columns.ensure(filter.columns);
+				filter.ignoreCase = F.is.boolean(filter.ignoreCase) ? filter.ignoreCase : this.ignoreCase;
+				filter.connectors = F.is.boolean(filter.connectors) ? filter.connectors : this.connectors;
+				filter.hidden = F.is.boolean(filter.hidden) ? filter.hidden : false;
+				filter.space = F.is.string(filter.space) && (filter.space === 'AND' || filter.space === 'OR') ? filter.space : this.space;
+				filter.query = F.is.string(filter.query) ? new F.Query(filter.query, filter.space, filter.connectors, filter.ignoreCase) : filter.query;
+				return (filter instanceof F.Filter)
+					? filter
+					: new F.Filter(filter.name, filter.query, filter.columns, filter.space, filter.connectors, filter.ignoreCase, filter.hidden);
+			}
+			return null;
 		},
 		/**
 		 * Handles the change event for the {@link FooTable.Filtering#$input}.
@@ -3782,15 +4096,25 @@
 		_onSearchInputChanged: function (e) {
 			var self = e.data.self;
 			var alpha = e.type == 'keypress' && !F.is.emptyString(String.fromCharCode(e.charCode)),
-				ctrl = e.type == 'keyup' && (e.which == 8 || e.which == 46); // backspace & delete
+				ctrl = e.type == 'keyup' && (e.which == 8 || e.which == 46),
+				paste = e.type == 'paste'; // backspace & delete
 
 			// if alphanumeric characters or specific control characters
-			if(alpha || ctrl) {
+			if(alpha || ctrl || paste) {
 				if (e.which == 13) e.preventDefault();
 				if (self._filterTimeout != null) clearTimeout(self._filterTimeout);
 				self._filterTimeout = setTimeout(function(){
 					self._filterTimeout = null;
-					self.filter();
+					var query = self.$input.val();
+					if (query.length >= self.min){
+						if (self.exactMatch && !self._exactRegExp.test(query)){
+							query = '"' + query + '"';
+						}
+						self.addFilter('search', query);
+						self.filter();
+					} else if (F.is.emptyString(query)){
+						self.clear();
+					}
 				}, self.delay);
 			}
 		},
@@ -3806,7 +4130,16 @@
 			if (self._filterTimeout != null) clearTimeout(self._filterTimeout);
 			var $icon = self.$button.children('.fooicon');
 			if ($icon.hasClass('fooicon-remove')) self.clear();
-			else self.filter();
+			else {
+				var query = self.$input.val();
+				if (query.length >= self.min){
+					if (self.exactMatch && !self._exactRegExp.test(query)){
+						query = '"' + query + '"';
+					}
+					self.addFilter('search', query);
+					self.filter();
+				}
+			}
 		},
 		/**
 		 * Handles the click event for the column checkboxes in the {@link FooTable.Filtering#$dropdown}.
@@ -3822,6 +4155,7 @@
 				var $icon = self.$button.children('.fooicon');
 				if ($icon.hasClass('fooicon-remove')){
 					$icon.removeClass('fooicon-remove').addClass('fooicon-search');
+					self.addFilter('search', self.$input.val());
 					self.filter();
 				}
 			}, self.delay);
@@ -3856,9 +4190,10 @@
 		}
 	});
 
-	F.components.core.register('filtering', F.Filtering, 10);
+	F.components.register('filtering', F.Filtering, 500);
 
 })(jQuery, FooTable);
+
 (function(F){
 	F.Query = F.Class.extend(/** @lends FooTable.Query */{
 		/**
@@ -3868,9 +4203,10 @@
 		 * @param {string} query - The string value of the query.
 		 * @param {string} [space="AND"] - How the query treats whitespace.
 		 * @param {boolean} [connectors=true] - Whether or not to replace phrase connectors (+.-_) with spaces.
+		 * @param {boolean} [ignoreCase=true] - Whether or not ignore case when matching.
 		 * @returns {FooTable.Query}
 		 */
-		construct: function(query, space, connectors){
+		construct: function(query, space, connectors, ignoreCase){
 			/* PRIVATE */
 			/**
 			 * Holds the previous value of the query and is used internally in the {@link FooTable.Query#val} method.
@@ -3896,6 +4232,12 @@
 			 * @type {boolean}
 			 */
 			this.connectors = F.is.boolean(connectors) ? connectors : true;
+			/**
+			 * Whether or not ignore case when matching.
+			 * @instance
+			 * @type {boolean}
+			 */
+			this.ignoreCase = F.is.boolean(ignoreCase) ? ignoreCase : true;
 			/**
 			 * The left side of the query if one exists. OR takes precedence over AND.
 			 * @type {FooTable.Query}
@@ -3959,26 +4301,39 @@
 		 * @private
 		 */
 		_match: function(str, def){
-			var self = this, result = false;
+			var self = this, result = false, empty = F.is.emptyString(str);
 			if (F.is.emptyArray(self.parts) && self.left instanceof F.Query) return def;
 			if (F.is.emptyArray(self.parts)) return result;
 			if (self.space === 'OR'){
 				// with OR we give the str every part to test and if any match it is a success, we do exit early if a negated match occurs
 				F.arr.each(self.parts, function(p){
-					var match = F.str.contains(str, p.query, true);
-					if (match && !p.negate) result = true;
-					if (match && p.negate) {
-						result = false;
-						return result;
+					if (p.empty && empty){
+						result = true;
+						if (p.negate){
+							result = false;
+							return result;
+						}
+					} else {
+						var match = (p.exact ? F.str.containsExact : F.str.contains)(str, p.query, self.ignoreCase);
+						if (match && !p.negate) result = true;
+						if (match && p.negate) {
+							result = false;
+							return result;
+						}
 					}
 				});
 			} else {
 				// otherwise with AND we check until the first failure and then exit
 				result = true;
 				F.arr.each(self.parts, function(p){
-					var match = F.str.contains(str, p.query, true);
-					if ((!match && !p.negate) || (match && p.negate)) result = false;
-					return result;
+					if (p.empty){
+						if ((!empty && !p.negate) || (empty && p.negate)) result = false;
+						return result;
+					} else {
+						var match = (p.exact ? F.str.containsExact : F.str.contains)(str, p.query, self.ignoreCase);
+						if ((!match && !p.negate) || (match && p.negate)) result = false;
+						return result;
+					}
 				});
 			}
 			return result;
@@ -4014,14 +4369,14 @@
 				// we have an OR so split the value on the first occurrence of OR to get the left and right sides of the statement
 				this.operator = 'OR';
 				var or = this._value.split(/(?:\sOR\s)(.*)?/);
-				this.left = new F.Query(or[0], this.space, this.connectors);
-				this.right = new F.Query(or[1], this.space, this.connectors);
+				this.left = new F.Query(or[0], this.space, this.connectors, this.ignoreCase);
+				this.right = new F.Query(or[1], this.space, this.connectors, this.ignoreCase);
 			} else if (/\sAND\s/.test(this._value)) {
 				// there are no more OR's so start with AND
 				this.operator = 'AND';
 				var and = this._value.split(/(?:\sAND\s)(.*)?/);
-				this.left = new F.Query(and[0], this.space, this.connectors);
-				this.right = new F.Query(and[1], this.space, this.connectors);
+				this.left = new F.Query(and[0], this.space, this.connectors, this.ignoreCase);
+				this.right = new F.Query(and[1], this.space, this.connectors, this.ignoreCase);
 			} else {
 				// we have no more statements to parse so set the parts array by parsing each part of the remaining query
 				var self = this;
@@ -4041,7 +4396,8 @@
 				query: str,
 				negate: false,
 				phrase: false,
-				exact: false
+				exact: false,
+				empty: false
 			};
 			// support for NEGATE operand - (minus sign). Remove this first so we can get onto phrase checking
 			if (F.str.startsWith(p.query, '-')){
@@ -4059,6 +4415,7 @@
 				});
 				p.phrase = true;
 			}
+			p.empty = p.phrase && F.is.emptyString(p.query);
 			return p;
 		}
 	});
@@ -4115,7 +4472,10 @@
 	 */
 	F.Column.prototype.filterValue = function(valueOrElement){
 		// if we have an element or a jQuery object use jQuery to get the value
-		if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)) return $(valueOrElement).data('filterValue') || $(valueOrElement).text();
+		if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)){
+			var data = $(valueOrElement).data('filterValue');
+			return F.is.defined(data) ? ''+data : $(valueOrElement).text();
+		}
 		// if options are supplied with the value
 		if (F.is.hash(valueOrElement) && F.is.hash(valueOrElement.options)){
 			if (F.is.string(valueOrElement.options.filterValue)) return valueOrElement.options.filterValue;
@@ -4128,6 +4488,7 @@
 	// this is used to define the filtering specific properties on column creation
 	F.Column.prototype.__filtering_define__ = function(definition){
 		this.filterable = F.is.boolean(definition.filterable) ? definition.filterable : this.filterable;
+		this.filterValue = F.checkFnValue(this, definition.filterValue, this.filterValue);
 	};
 
 	// overrides the public define method and replaces it with our own
@@ -4143,21 +4504,27 @@
 	 * @prop {boolean} enabled=false - Whether or not to allow filtering on the table.
 	 * @prop {({name: string, query: (string|FooTable.Query), columns: (Array.<string>|Array.<number>|Array.<FooTable.Column>)}|Array.<FooTable.Filter>)} filters - The filters to apply to the current {@link FooTable.Rows#array}.
 	 * @prop {number} delay=1200 - The delay in milliseconds before the query is auto applied after a change (any value equal to or less than zero will disable this).
-	 * @prop {number} min=3 - The minimum number of characters allowed in the search input before it is auto applied.
+	 * @prop {number} min=1 - The minimum number of characters allowed in the search input before it is auto applied.
 	 * @prop {string} space="AND" - Specifies how whitespace in a filter query is handled.
 	 * @prop {string} placeholder="Search" - The string used as the placeholder for the search input.
+	 * @prop {string} dropdownTitle=null - The title to display at the top of the search input column select.
 	 * @prop {string} position="right" - The string used to specify the alignment of the search input.
 	 * @prop {string} connectors=true - Whether or not to replace phrase connectors (+.-_) with space before executing the query.
+	 * @prop {boolean} ignoreCase=true - Whether or not ignore case when matching.
+	 * @prop {boolean} exactMatch=false - Whether or not search queries are treated as phrases when matching.
 	 */
 	F.Defaults.prototype.filtering = {
 		enabled: false,
 		filters: [],
 		delay: 1200,
-		min: 3,
+		min: 1,
 		space: 'AND',
 		placeholder: 'Search',
+		dropdownTitle: null,
 		position: 'right',
-		connectors: true
+		connectors: true,
+		ignoreCase: true,
+		exactMatch: false
 	};
 })(FooTable);
 (function(F){
@@ -4173,33 +4540,6 @@
 			if ((result = f.matchRow(self)) == false) return false;
 		});
 		return result;
-	};
-})(FooTable);
-(function(F){
-	/**
-	 * Filter the table using the supplied query and columns. Added by the {@link FooTable.Filtering} component.
-	 * @instance
-	 * @param {string} query - The query to filter the rows by.
-	 * @param {(Array.<string>|Array.<number>|Array.<FooTable.Column>)} [columns] - The columns to apply the filter to in each row.
-	 * @returns {jQuery.Promise}
-	 * @fires FooTable.Filtering#before.ft.filtering
-	 * @fires FooTable.Filtering#after.ft.filtering
-	 * @see FooTable.Filtering#filter
-	 */
-	F.Table.prototype.applyFilter = function(query, columns){
-		return this.use(F.Filtering).filter(query, columns);
-	};
-
-	/**
-	 * Clear the current filter from the table. Added by the {@link FooTable.Filtering} component.
-	 * @instance
-	 * @returns {jQuery.Promise}
-	 * @fires FooTable.Filtering#before.ft.filtering
-	 * @fires FooTable.Filtering#after.ft.filtering
-	 * @see FooTable.Filtering#clear
-	 */
-	F.Table.prototype.clearFilter = function(){
-		return this.use(F.Filtering).clear();
 	};
 })(FooTable);
 (function($, F){
@@ -4255,15 +4595,18 @@
 			 * @type {FooTable.Column}
 			 */
 			this.column = null;
-
-			/* PRIVATE */
 			/**
-			 * Sets a flag indicating whether or not the sorting has changed. When set to true the {@link FooTable.Sorting#sorting_changing} and {@link FooTable.Sorting#sorting_changed} events
-			 * will be raised during the drawing operation.
-			 * @private
+			 * Whether or not to allow sorting to occur, should be set using the {@link FooTable.Sorting#toggleAllowed} method.
+			 * @instance
 			 * @type {boolean}
 			 */
-			this._changed = false;
+			this.allowed = true;
+			/**
+			 * The initial sort state of the table, this value is used for determining if the sorting has occurred or to reset the state to default.
+			 * @instance
+			 * @type {{isset: boolean, rows: Array.<FooTable.Row>, column: string, direction: ?string}}
+			 */
+			this.initial = null;
 		},
 
 		/* PROTECTED */
@@ -4314,6 +4657,17 @@
 			 */
 			var self = this;
 			this.ft.raise('init.ft.sorting').then(function(){
+				if (!self.initial){
+					var isset = !!self.column;
+					self.initial = {
+						isset: isset,
+						// grab a shallow copy of the rows array prior to sorting - allows us to reset without an initial sort
+						rows: self.ft.rows.all.slice(0),
+						// if there is a sorted column store its name and direction
+						column: isset ? self.column.name : null,
+						direction: isset ? self.column.direction : null
+					}
+				}
 				F.arr.each(self.ft.columns.array, function(col){
 					if (col.sortable){
 						col.$el.addClass('footable-sortable').append($('<span/>', {'class': 'fooicon fooicon-sort'}));
@@ -4342,7 +4696,7 @@
 			this.ft.raise('destroy.ft.paging').then(function(){
 				self.ft.$el.off('click.footable', '.footable-sortable', self._onSortClicked);
 				self.ft.$el.children('thead').children('tr.footable-header')
-					.children('.footable-sortable').removeClass('footable-sortable')
+					.children('.footable-sortable').removeClass('footable-sortable footable-asc footable-desc')
 					.find('span.fooicon').remove();
 			});
 		},
@@ -4354,15 +4708,10 @@
 		predraw: function () {
 			if (!this.column) return;
 			var self = this, col = self.column;
-			//self.ft.rows.array.sort(function (a, b) {
-			//	return col.direction == 'ASC'
-			//			? col.sorter(a.cells[col.index].value, b.cells[col.index].value)
-			//			: col.sorter(b.cells[col.index].value, a.cells[col.index].value);
-			//});
 			self.ft.rows.array.sort(function (a, b) {
-				return col.direction == 'ASC'
-						? col.sorter(a.cells[col.index].sortValue, b.cells[col.index].sortValue)
-						: col.sorter(b.cells[col.index].sortValue, a.cells[col.index].sortValue);
+				return col.direction == 'DESC'
+						? col.sorter(b.cells[col.index].sortValue, a.cells[col.index].sortValue)
+						: col.sorter(a.cells[col.index].sortValue, b.cells[col.index].sortValue);
 			});
 		},
 		/**
@@ -4378,8 +4727,8 @@
 
 			$sortable.removeClass('footable-asc footable-desc').children('.fooicon').removeClass('fooicon-sort fooicon-sort-asc fooicon-sort-desc');
 			$sortable.not($active).children('.fooicon').addClass('fooicon-sort');
-			$active.addClass(self.column.direction == 'ASC' ? 'footable-asc' : 'footable-desc')
-				.children('.fooicon').addClass(self.column.direction == 'ASC' ? 'fooicon-sort-asc' : 'fooicon-sort-desc');
+			$active.addClass(self.column.direction == 'DESC' ? 'footable-desc' : 'footable-asc')
+				.children('.fooicon').addClass(self.column.direction == 'DESC' ? 'fooicon-sort-desc' : 'fooicon-sort-asc');
 		},
 
 		/* PUBLIC */
@@ -4395,6 +4744,47 @@
 		sort: function(column, direction){
 			return this._sort(column, direction);
 		},
+		/**
+		 * Toggles whether or not sorting is currently allowed.
+		 * @param {boolean} [state] - You can optionally specify the state you want it to be, if not supplied the current value is flipped.
+		 */
+		toggleAllowed: function(state){
+			state = F.is.boolean(state) ? state : !this.allowed;
+			this.allowed = state;
+			this.ft.$el.toggleClass('footable-sorting-disabled', !this.allowed);
+		},
+		/**
+		 * Checks whether any sorting has occurred for the table.
+		 * @returns {boolean}
+		 */
+		hasChanged: function(){
+			return !(!this.initial || !this.column ||
+				(this.column.name === this.initial.column &&
+					(this.column.direction === this.initial.direction || (this.initial.direction === null && this.column.direction === 'ASC')))
+			);
+		},
+		/**
+		 * Resets the table sorting to the initial state recorded in the components init method.
+		 */
+		reset: function(){
+			if (!!this.initial){
+				if (this.initial.isset){
+					// if the initial value specified a column, sort by it
+					this.sort(this.initial.column, this.initial.direction);
+				} else {
+					// if there was no initial column then we need to reset the rows to there original order
+					if (!!this.column){
+						// if there is a currently sorted column remove the asc/desc classes and set it to null.
+						this.column.$el.removeClass('footable-asc footable-desc');
+						this.column = null;
+					}
+					// replace the current all rows array with the one stored in the initial value
+					this.ft.rows.all = this.initial.rows;
+					// force the table to redraw itself using the updated rows array
+					this.ft.draw();
+				}
+			}
+		},
 
 		/* PRIVATE */
 		/**
@@ -4408,6 +4798,7 @@
 		 * @fires FooTable.Sorting#"after.ft.sorting"
 		 */
 		_sort: function(column, direction){
+			if (!this.allowed) return $.Deferred().reject('sorting disabled');
 			var self = this;
 			var sorter = new F.Sorter(self.ft.columns.get(column), F.Sorting.dir(direction));
 			/**
@@ -4442,7 +4833,6 @@
 		 * @param {jQuery.Event} e - The event object for the event.
 		 */
 		_onSortClicked: function (e) {
-			e.preventDefault();
 			var self = e.data.self, $header = $(this).closest('th,td'),
 				direction = $header.is('.footable-asc, .footable-desc')
 					? ($header.hasClass('footable-desc') ? 'ASC' : 'DESC')
@@ -4461,7 +4851,7 @@
 		return F.is.string(str) && (str == 'ASC' || str == 'DESC') ? str : 'ASC';
 	};
 
-	F.components.core.register('sorting', F.Sorting, 5);
+	F.components.register('sorting', F.Sorting, 600);
 
 })(jQuery, FooTable);
 (function(F){
@@ -4552,7 +4942,10 @@
 	 */
 	F.Column.prototype.sortValue = function(valueOrElement){
 		// if we have an element or a jQuery object use jQuery to get the value
-		if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)) return $(valueOrElement).data('sortValue') || this.parser(valueOrElement);
+		if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)){
+			var data = $(valueOrElement).data('sortValue');
+			return F.is.defined(data) ? data : this.parser(valueOrElement);
+		}
 		// if options are supplied with the value
 		if (F.is.hash(valueOrElement) && F.is.hash(valueOrElement.options)){
 			if (F.is.string(valueOrElement.options.sortValue)) return valueOrElement.options.sortValue;
@@ -4568,6 +4961,7 @@
 		this.direction = F.is.type(definition.direction, 'string') ? F.Sorting.dir(definition.direction) : null;
 		this.sortable = F.is.boolean(definition.sortable) ? definition.sortable : true;
 		this.sorted = F.is.boolean(definition.sorted) ? definition.sorted : false;
+		this.sortValue = F.checkFnValue(this, definition.sortValue, this.sortValue);
 	};
 
 	// overrides the public define method and replaces it with our own
@@ -4603,7 +4997,8 @@
 	F.HTMLColumn.prototype.sortValue = function(valueOrElement){
 		// if we have an element or a jQuery object use jQuery to get the data value or pass it off to the parser
 		if (F.is.element(valueOrElement) || F.is.jq(valueOrElement)){
-			return $(valueOrElement).data('sortValue') || $.trim($(valueOrElement)[this.sortUse]());
+			var data = $(valueOrElement).data('sortValue');
+			return F.is.defined(data) ? data : $.trim($(valueOrElement)[this.sortUse]());
 		}
 		// if options are supplied with the value
 		if (F.is.hash(valueOrElement) && F.is.hash(valueOrElement.options)){
@@ -4709,16 +5104,19 @@
 			this.size = table.o.paging.size;
 			/**
 			 * The maximum number of page links to display at once.
+			 * @instance
 			 * @type {number}
 			 */
 			this.limit = table.o.paging.limit;
 			/**
 			 * The position of the pagination control within the paging rows cell.
+			 * @instance
 			 * @type {string}
 			 */
 			this.position = table.o.paging.position;
 			/**
 			 * The format string used to generate the text displayed under the pagination control.
+			 * @instance
 			 * @type {string}
 			 */
 			this.countFormat = table.o.paging.countFormat;
@@ -4728,6 +5126,24 @@
 			 * @type {number}
 			 */
 			this.total = -1;
+			/**
+			 * The number of rows in the {@link FooTable.Rows#array} before paging is applied.
+			 * @instance
+			 * @type {number}
+			 */
+			this.totalRows = 0;
+			/**
+			 * A number indicating the previous page displayed.
+			 * @instance
+			 * @type {number}
+			 */
+			this.previous = -1;
+			/**
+			 * The count string generated using the {@link FooTable.Filtering#countFormat} option. This value is only set after the first call to the {@link FooTable.Filtering#predraw} method.
+			 * @instance
+			 * @type {string}
+			 */
+			this.formattedCount = null;
 			/**
 			 * The jQuery row object that contains all the paging specific elements.
 			 * @instance
@@ -4742,33 +5158,31 @@
 			this.$cell = null;
 			/**
 			 * The jQuery object that contains the links for the pagination control.
+			 * @instance
 			 * @type {jQuery}
 			 */
 			this.$pagination = null;
 			/**
 			 * The jQuery object that contains the row count.
+			 * @instance
 			 * @type {jQuery}
 			 */
 			this.$count = null;
 			/**
 			 * Whether or not the pagination row is detached from the table.
+			 * @instance
 			 * @type {boolean}
 			 */
-			this.detached = false;
+			this.detached = true;
 
 			/* PRIVATE */
 			/**
-			 * A number indicating the previous page displayed.
-			 * @private
-			 * @type {number}
-			 */
-			this._previous = 1;
-			/**
-			 * Used to hold the number of rows in the {@link FooTable.Rows#array} before paging is applied.
+			 * Used to hold the number of page links created.
+			 * @instance
 			 * @type {number}
 			 * @private
 			 */
-			this._total = 0;
+			this._createdLinks = 0;
 		},
 
 		/* PROTECTED */
@@ -4869,7 +5283,8 @@
 			this.ft.raise('destroy.ft.paging').then(function(){
 				self.ft.$el.removeClass('footable-paging')
 					.find('tfoot > tr.footable-paging').remove();
-				self.detached = false;
+				self.detached = true;
+				self._createdLinks = 0;
 			});
 		},
 		/**
@@ -4880,9 +5295,11 @@
 		predraw: function(){
 			this.total = Math.ceil(this.ft.rows.array.length / this.size);
 			this.current = this.current > this.total ? this.total : (this.current < 1 ? 1 : this.current);
-			if (this.ft.rows.array.length > this.size){
+			this.totalRows = this.ft.rows.array.length;
+			if (this.totalRows > this.size){
 				this.ft.rows.array = this.ft.rows.array.splice((this.current - 1) * this.size, this.size);
 			}
+			this.formattedCount = this.format(this.countFormat);
 		},
 		/**
 		 * Updates the paging UI setting the state of the pagination control.
@@ -4907,8 +5324,9 @@
 				}
 				this.$cell.attr('colspan', this.ft.columns.visibleColspan);
 				this._createLinks();
-				this._setVisible(this.current, this.current > this._previous);
+				this._setVisible(this.current, this.current > this.previous);
 				this._setNavigation(true);
+				this.$count.text(this.formattedCount);
 			}
 		},
 		/**
@@ -4917,6 +5335,7 @@
 		 * @protected
 		 */
 		$create: function(){
+			this._createdLinks = 0;
 			var position = 'footable-paging-center';
 			switch (this.position){
 				case 'left': position = 'footable-paging-left'; break;
@@ -4934,10 +5353,36 @@
 			this.$count = $('<span/>', { 'class': 'label label-default' });
 			this.$cell.append(this.$pagination, $('<div/>', {'class': 'divider'}), this.$count);
 			this.detached = false;
-			this._createLinks();
 		},
 
 		/* PUBLIC */
+		/**
+		 * @summary Uses the supplied format string and replaces the placeholder strings with the current values.
+		 * @description This method is used to generate the short description label for the pagination control. i.e. Showing X of Y records. The placeholders for this string are the following:
+		 * * {CP} - The current page number.
+		 * * {TP} - The total number of pages.
+		 * * {PF} - The first row of the current page.
+		 * * {PL} - The last row of the current page.
+		 * * {TR} - The total rows available.
+		 * These placeholders can be supplied in a string like; "Showing {PF} to {PL} of {TR} rows."
+		 * @param {string} formatString - The string to be formatted with the paging specific variables.
+		 * @returns {string}
+		 */
+		format: function(formatString){
+			var firstRow = (this.size * (this.current - 1)) + 1,
+				lastRow = this.size * this.current;
+			if (this.ft.rows.array.length == 0){
+				firstRow = 0;
+				lastRow = 0;
+			} else {
+				lastRow = lastRow > this.totalRows ? this.totalRows : lastRow;
+			}
+			return formatString.replace(/\{CP}/g, this.current)
+				.replace(/\{TP}/g, this.total)
+				.replace(/\{PF}/g, firstRow)
+				.replace(/\{PL}/g, lastRow)
+				.replace(/\{TR}/g, this.totalRows);
+		},
 		/**
 		 * Pages to the first page.
 		 * @instance
@@ -5048,7 +5493,7 @@
 				pager.page = pager.page > pager.total ? pager.total	: pager.page;
 				pager.page = pager.page < 1 ? 1 : pager.page;
 				if (self.current == page) return $.when();
-				self._previous = self.current;
+				self.previous = self.current;
 				self.current = pager.page;
 				return self.ft.draw().then(function(){
 					/**
@@ -5069,7 +5514,7 @@
 		 * @private
 		 */
 		_createLinks: function(){
-			if (this._total === this.total) return;
+			if (this._createdLinks === this.total) return;
 			var self = this,
 				multiple = self.total > 1,
 				link = function(attr, html, klass){
@@ -5100,7 +5545,7 @@
 				self.$pagination.append(link('next', self.strings.next, 'footable-page-nav'));
 				self.$pagination.append(link('last', self.strings.last, 'footable-page-nav'));
 			}
-			self._total = self.total;
+			self._createdLinks = self.total;
 		},
 		/**
 		 * Sets the state for the navigation links of the pagination control and optionally sets the active class state on the current page link.
@@ -5134,9 +5579,9 @@
 			}
 
 			if (this.limit > 0 && this.total < this.limit){
-				this.$pagination.children('li[data-page="prev-limit"],li[data-page="next-limit"]').hide();
+				this.$pagination.children('li[data-page="prev-limit"],li[data-page="next-limit"]').css('display', 'none');
 			} else {
-				this.$pagination.children('li[data-page="prev-limit"],li[data-page="next-limit"]').show();
+				this.$pagination.children('li[data-page="prev-limit"],li[data-page="next-limit"]').css('display', '');
 			}
 
 			if (active){
@@ -5174,32 +5619,6 @@
 			} else {
 				this.$pagination.children('li.footable-page').removeClass('visible').slice(0, this.total).addClass('visible');
 			}
-			var first = (this.size * (page - 1)) + 1,
-				last = this.size * page,
-				totalRows = this.ft.rows.all.length;
-			if (this.ft.rows.array.length == 0){
-				first = 0;
-				last = 0;
-			} else {
-				last = last > totalRows ? totalRows : last;
-			}
-			this._setCount(page, this.total, first, last, totalRows);
-		},
-		/**
-		 * Uses the countFormat option to generate the text using the supplied parameters.
-		 * @param {number} currentPage - The current page.
-		 * @param {number} totalPages - The total number of pages.
-		 * @param {number} pageFirst - The first row number of the current page.
-		 * @param {number} pageLast - The last row number of the current page.
-		 * @param {number} totalRows - The total number of rows.
-		 * @private
-		 */
-		_setCount: function(currentPage, totalPages, pageFirst, pageLast, totalRows){
-			this.$count.text(this.countFormat.replace(/\{CP}/g, currentPage)
-				.replace(/\{TP}/g, totalPages)
-				.replace(/\{PF}/g, pageFirst)
-				.replace(/\{PL}/g, pageLast)
-				.replace(/\{TR}/g, totalRows));
 		},
 		/**
 		 * Handles the click event for all links in the pagination control.
@@ -5231,7 +5650,7 @@
 		}
 	});
 
-	F.components.core.register('paging', F.Paging, 0);
+	F.components.register('paging', F.Paging, 400);
 
 })(jQuery, FooTable);
 (function(F){
@@ -5433,6 +5852,43 @@
 			 * @type {string}
 			 */
 			this.deleteText = table.o.editing.deleteText;
+			
+			/**
+			 * The text that appears in the view button. This can contain HTML.
+			 * @type {string}
+			 */
+			this.viewText = table.o.editing.viewText;
+
+			/**
+			 * Whether or not to show the Add Row button.
+			 * @type {boolean}
+			 */
+			this.allowAdd = table.o.editing.allowAdd;
+
+			/**
+			 * Whether or not to show the Edit Row button.
+			 * @type {boolean}
+			 */
+			this.allowEdit = table.o.editing.allowEdit;
+
+			/**
+			 * Whether or not to show the Delete Row button.
+			 * @type {boolean}
+			 */
+			this.allowDelete = table.o.editing.allowDelete;
+
+			/**
+			 * Whether or not to show the View Row button.
+			 * @type {boolean}
+			 */
+			this.allowView = table.o.editing.allowView;
+
+			/**
+			 * Caches the row button elements to help with performance.
+			 * @type {(null|jQuery)}
+			 * @private
+			 */
+			this._$buttons = null;
 
 			/**
 			 * This object is used to contain the callbacks for the add, edit and delete row buttons.
@@ -5440,11 +5896,13 @@
 			 * @prop {function} addRow
 			 * @prop {function} editRow
 			 * @prop {function} deleteRow
+			 * @prop {function} viewRow
 			 */
 			this.callbacks = {
 				addRow: F.checkFnValue(this, table.o.editing.addRow),
 				editRow: F.checkFnValue(this, table.o.editing.editRow),
-				deleteRow: F.checkFnValue(this, table.o.editing.deleteRow)
+				deleteRow: F.checkFnValue(this, table.o.editing.deleteRow),
+				viewRow: F.checkFnValue(this, table.o.editing.viewRow)
 			};
 		},
 		/* PROTECTED */
@@ -5491,6 +5949,16 @@
 
 				self.deleteText = F.is.string(data.editingDeleteText) ? data.editingDeleteText : self.deleteText;
 
+				self.viewText = F.is.string(data.editingViewText) ? data.editingViewText : self.viewText;
+
+				self.allowAdd = F.is.boolean(data.editingAllowAdd) ? data.editingAllowAdd : self.allowAdd;
+
+				self.allowEdit = F.is.boolean(data.editingAllowEdit) ? data.editingAllowEdit : self.allowEdit;
+
+				self.allowDelete = F.is.boolean(data.editingAllowDelete) ? data.editingAllowDelete : self.allowDelete;
+
+				self.allowView = F.is.boolean(data.editingAllowView) ? data.editingAllowView : self.allowView;
+
 				self.column = new F.EditingColumn(self.ft, self, $.extend(true, {}, self.column, data.editingColumn, {visible: self.alwaysShow}));
 
 				if (self.ft.$el.hasClass('footable-editing-left'))
@@ -5513,6 +5981,7 @@
 				self.callbacks.addRow = F.checkFnValue(self, data.editingAddRow, self.callbacks.addRow);
 				self.callbacks.editRow = F.checkFnValue(self, data.editingEditRow, self.callbacks.editRow);
 				self.callbacks.deleteRow = F.checkFnValue(self, data.editingDeleteRow, self.callbacks.deleteRow);
+				self.callbacks.viewRow = F.checkFnValue(self, data.editingViewRow, self.callbacks.viewRow);
 			}, function(){
 				self.enabled = false;
 			});
@@ -5554,8 +6023,8 @@
 			 */
 			var self = this;
 			this.ft.raise('destroy.ft.editing').then(function(){
-				self.ft.$el.removeClass('footable-editing').off('click.ft.editing')
-					.find('tfoot > tr.footable-editing').remove();
+				self.ft.$el.removeClass('footable-editing footable-editing-always-show footable-editing-no-add footable-editing-no-edit footable-editing-no-delete footable-editing-no-view')
+					.off('click.ft.editing').find('tfoot > tr.footable-editing').remove();
 			});
 		},
 		/**
@@ -5570,16 +6039,23 @@
 				.on('click.ft.editing', '.footable-hide', {self: self}, self._onHideClick)
 				.on('click.ft.editing', '.footable-edit', {self: self}, self._onEditClick)
 				.on('click.ft.editing', '.footable-delete', {self: self}, self._onDeleteClick)
+				.on('click.ft.editing', '.footable-view', {self: self}, self._onViewClick)
 				.on('click.ft.editing', '.footable-add', {self: self}, self._onAddClick);
 
-			self.$cell = $('<td/>').attr('colspan', self.ft.columns.visibleColspan)
-				.append(self.$buttonShow())
-				.append(self.$buttonAdd())
-				.append(self.$buttonHide());
+			self.$cell = $('<td/>').attr('colspan', self.ft.columns.visibleColspan).append(self.$buttonShow());
+			if (self.allowAdd){
+				self.$cell.append(self.$buttonAdd());
+			}
+			self.$cell.append(self.$buttonHide());
 
 			if (self.alwaysShow){
 				self.ft.$el.addClass('footable-editing-always-show');
 			}
+
+			if (!self.allowAdd) self.ft.$el.addClass('footable-editing-no-add');
+			if (!self.allowEdit) self.ft.$el.addClass('footable-editing-no-edit');
+			if (!self.allowDelete) self.ft.$el.addClass('footable-editing-no-delete');
+			if (!self.allowView) self.ft.$el.addClass('footable-editing-no-view');
 
 			var $tfoot = self.ft.$el.children('tfoot');
 			if ($tfoot.length == 0){
@@ -5634,15 +6110,27 @@
 			return '<button type="button" class="btn btn-default footable-delete">' + this.deleteText + '</button>';
 		},
 		/**
+		 * Creates the view button for the editing component.
+		 * @instance
+		 * @protected
+		 * @returns {(string|HTMLElement|jQuery)}
+		 */
+		$buttonView: function(){
+			return '<button type="button" class="btn btn-default footable-view">' + this.viewText + '</button> ';
+		},
+		/**
 		 * Creates the button group for the row buttons.
 		 * @instance
 		 * @protected
 		 * @returns {(string|HTMLElement|jQuery)}
 		 */
 		$rowButtons: function(){
-			return $('<div class="btn-group btn-group-xs" role="group"></div>')
-				.append(this.$buttonEdit())
-				.append(this.$buttonDelete());
+			if (F.is.jq(this._$buttons)) return this._$buttons.clone();
+			this._$buttons = $('<div class="btn-group btn-group-xs" role="group"></div>');
+			if (this.allowView) this._$buttons.append(this.$buttonView());
+			if (this.allowEdit) this._$buttons.append(this.$buttonEdit());
+			if (this.allowDelete) this._$buttons.append(this.$buttonDelete());
+			return this._$buttons;
 		},
 		/**
 		 * Performs the drawing of the component.
@@ -5695,6 +6183,30 @@
 				 */
 				self.ft.raise('delete.ft.editing', [row]).then(function(){
 					self.callbacks.deleteRow.call(self.ft, row);
+				});
+			}
+		},
+		/**
+		 * Handles the view button click event.
+		 * @instance
+		 * @private
+		 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+		 * @fires FooTable.Editing#"view.ft.editing"
+		 */
+		_onViewClick: function(e){
+			e.preventDefault();
+			var self = e.data.self, row = $(this).closest('tr').data('__FooTableRow__');
+			if (row instanceof F.Row){
+				/**
+				 * The view.ft.editing event is raised before its callback is executed.
+				 * Calling preventDefault on this event will prevent the callback from being executed.
+				 * @event FooTable.Editing#"view.ft.editing"
+				 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+				 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+				 * @param {FooTable.Row} row - The row to be viewed.
+				 */
+				self.ft.raise('view.ft.editing', [row]).then(function(){
+					self.callbacks.viewRow.call(self.ft, row);
 				});
 			}
 		},
@@ -5767,9 +6279,10 @@
 		}
 	});
 
-	F.components.internal.register('editing', F.Editing, 4);
+	F.components.register('editing', F.Editing, 850);
 
 })(jQuery, FooTable);
+
 (function($, F){
 
 	F.EditingColumn = F.Column.extend(/** @lends FooTable.EditingColumn */{
@@ -5785,6 +6298,15 @@
 		construct: function(instance, editing, definition){
 			this._super(instance, definition, 'editing');
 			this.editing = editing;
+		},
+		/**
+		 * After the column has been defined this ensures that the $el property is a jQuery object by either creating or updating the current value.
+		 * @instance
+		 * @protected
+		 * @this FooTable.Column
+		 */
+		$create: function(){
+			(this.$el = !this.virtual && F.is.jq(this.$el) ? this.$el : $('<th/>', {'class': 'footable-editing'})).html(this.title);
 		},
 		/**
 		 * This is supplied either the cell value or jQuery object to parse. Any value can be returned from this method and
@@ -5838,11 +6360,17 @@
 	 * @prop {function} addRow - The callback function to execute when the add row button is clicked.
 	 * @prop {function} editRow - The callback function to execute when the edit row button is clicked.
 	 * @prop {function} deleteRow - The callback function to execute when the delete row button is clicked.
+	 * @prop {function} viewRow - The callback function to execute when the view row button is clicked.
 	 * @prop {string} showText - The text that appears in the show button. This can contain HTML.
 	 * @prop {string} hideText - The text that appears in the hide button. This can contain HTML.
 	 * @prop {string} addText - The text that appears in the add button. This can contain HTML.
 	 * @prop {string} editText - The text that appears in the edit button. This can contain HTML.
 	 * @prop {string} deleteText - The text that appears in the delete button. This can contain HTML.
+	 * @prop {string} viewText - The text that appears in the view button. This can contain HTML.
+	 * @prop {boolean} allowAdd - Whether or not to show the Add Row button.
+	 * @prop {boolean} allowEdit - Whether or not to show the Edit Row button.
+	 * @prop {boolean} allowDelete - Whether or not to show the Delete Row button.
+	 * @prop {boolean} allowView - Whether or not to show the View Row button.
 	 * @prop {object} column - The options for the editing column. @see {@link FooTable.EditingColumn} for more info.
 	 * @prop {string} column.classes="footable-editing" - A space separated string of class names to apply to all cells in the column.
 	 * @prop {string} column.name="editing" - The name of the column.
@@ -5858,11 +6386,17 @@
 		addRow: function(){},
 		editRow: function(row){},
 		deleteRow: function(row){},
+		viewRow: function(row){},
 		showText: '<span class="fooicon fooicon-pencil" aria-hidden="true"></span> Edit rows',
 		hideText: 'Cancel',
 		addText: 'New row',
 		editText: '<span class="fooicon fooicon-pencil" aria-hidden="true"></span>',
 		deleteText: '<span class="fooicon fooicon-trash" aria-hidden="true"></span>',
+		viewText: '<span class="fooicon fooicon-stats" aria-hidden="true"></span>',
+		allowAdd: true,
+		allowEdit: true,
+		allowDelete: true,
+		allowView: false,
 		column: {
 			classes: 'footable-editing',
 			name: 'editing',
@@ -5873,6 +6407,7 @@
 	};
 
 })(jQuery, FooTable);
+
 (function($, F){
 
 	if (F.is.defined(F.Paging)){
@@ -5990,14 +6525,16 @@
 	/**
 	 * Adds a row to the underlying {@link FooTable.Rows#all} array.
 	 * @param {(object|FooTable.Row)} dataOrRow - A hash containing the row values or an actual {@link FooTable.Row} object.
+	 * @param {boolean} [redraw=true] - Whether or not to redraw the table, defaults to true but for bulk operations this
+	 * can be set to false and then followed by a call to the {@link FooTable.Table#draw} method.
 	 */
-	F.Rows.prototype.add = function(dataOrRow){
+	F.Rows.prototype.add = function(dataOrRow, redraw){
 		var row = dataOrRow;
 		if (F.is.hash(dataOrRow)){
 			row = new FooTable.Row(this.ft, this.ft.columns.array, dataOrRow);
 		}
 		if (row instanceof FooTable.Row){
-			row.add();
+			row.add(redraw);
 		}
 	};
 
@@ -6005,29 +6542,391 @@
 	 * Updates a row in the underlying {@link FooTable.Rows#all} array.
 	 * @param {(number|FooTable.Row)} indexOrRow - The index to update or the actual {@link FooTable.Row} object.
 	 * @param {object} data - A hash containing the new row values.
+	 * @param {boolean} [redraw=true] - Whether or not to redraw the table, defaults to true but for bulk operations this
+	 * can be set to false and then followed by a call to the {@link FooTable.Table#draw} method.
 	 */
-	F.Rows.prototype.update = function(indexOrRow, data){
-		var len = this.ft.rows.all, row;
+	F.Rows.prototype.update = function(indexOrRow, data, redraw){
+		var len = this.ft.rows.all.length, 
+			row = indexOrRow;
 		if (F.is.number(indexOrRow) && indexOrRow >= 0 && indexOrRow < len){
 			row = this.ft.rows.all[indexOrRow];
 		}
 		if (row instanceof FooTable.Row && F.is.hash(data)){
-			row.val(data);
+			row.val(data, redraw);
 		}
 	};
 
 	/**
 	 * Deletes a row from the underlying {@link FooTable.Rows#all} array.
 	 * @param {(number|FooTable.Row)} indexOrRow - The index to delete or the actual {@link FooTable.Row} object.
+	 * @param {boolean} [redraw=true] - Whether or not to redraw the table, defaults to true but for bulk operations this
+	 * can be set to false and then followed by a call to the {@link FooTable.Table#draw} method.
 	 */
-	F.Rows.prototype.delete = function(indexOrRow){
-		var len = this.ft.rows.all, row;
+	F.Rows.prototype.delete = function(indexOrRow, redraw){
+		var len = this.ft.rows.all.length, 
+			row = indexOrRow;
 		if (F.is.number(indexOrRow) && indexOrRow >= 0 && indexOrRow < len){
 			row = this.ft.rows.all[indexOrRow];
 		}
 		if (row instanceof FooTable.Row){
-			row.delete();
+			row.delete(redraw);
 		}
 	};
+
+})(FooTable);
+
+(function($, F){
+
+	// global int to use if the table has no ID
+	var _uid = 0,
+	// a hash value for the current url
+		_url_hash = (function(str){
+			var i, l, hval = 0x811c9dc5;
+			for (i = 0, l = str.length; i < l; i++) {
+				hval ^= str.charCodeAt(i);
+				hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+			}
+			return hval >>> 0;
+		})(location.origin + location.pathname);
+
+	F.State = F.Component.extend(/** @lends FooTable.State */{
+		/**
+		 * The state component adds the ability for the table to remember its basic state for filtering, paging and sorting.
+		 * @constructs
+		 * @extends FooTable.Component
+		 * @param {FooTable.Table} table - The parent {@link FooTable.Table} object for the component.
+		 * @returns {FooTable.State}
+		 */
+		construct: function(table){
+			// call the constructor of the base class
+			this._super(table, table.o.state.enabled);
+			// Change this value if an update to this component requires any stored data to be reset
+			this._key = '1';
+			/**
+			 * The key to use to store the state for this table.
+			 * @type {(null|string)}
+			 */
+			this.key = this._key + (F.is.string(table.o.state.key) ? table.o.state.key : this._uid());
+			/**
+			 * Whether or not to allow the filtering component to store it's state.
+			 * @type {boolean}
+			 */
+			this.filtering = F.is.boolean(table.o.state.filtering) ? table.o.state.filtering : true;
+			/**
+			 * Whether or not to allow the paging component to store it's state.
+			 * @type {boolean}
+			 */
+			this.paging = F.is.boolean(table.o.state.paging) ? table.o.state.paging : true;
+			/**
+			 * Whether or not to allow the sorting component to store it's state.
+			 * @type {boolean}
+			 */
+			this.sorting = F.is.boolean(table.o.state.sorting) ? table.o.state.sorting : true;
+		},
+		/* PROTECTED */
+		/**
+		 * Checks the supplied data and options for the state component.
+		 * @instance
+		 * @protected
+		 * @param {object} data - The jQuery data object from the parent table.
+		 * @fires FooTable.State#"preinit.ft.state"
+		 * @this FooTable.State
+		 */
+		preinit: function(data){
+			var self = this;
+			/**
+			 * The preinit.ft.state event is raised before the UI is created and provides the tables jQuery data object for additional options parsing.
+			 * Calling preventDefault on this event will disable the component.
+			 * @event FooTable.State#"preinit.ft.state"
+			 * @param {jQuery.Event} e - The jQuery.Event object for the event.
+			 * @param {FooTable.Table} ft - The instance of the plugin raising the event.
+			 * @param {object} data - The jQuery data object of the table raising the event.
+			 */
+			this.ft.raise('preinit.ft.state', [data]).then(function(){
+
+				self.enabled = F.is.boolean(data.state)
+					? data.state
+					: self.enabled;
+
+				if (!self.enabled) return;
+
+				self.key = self._key + (F.is.string(data.stateKey) ? data.stateKey : self.key);
+
+				self.filtering = F.is.boolean(data.stateFiltering) ? data.stateFiltering : self.filtering;
+
+				self.paging = F.is.boolean(data.statePaging) ? data.statePaging : self.paging;
+
+				self.sorting = F.is.boolean(data.stateSorting) ? data.stateSorting : self.sorting;
+
+			}, function(){
+				self.enabled = false;
+			});
+		},
+		/**
+		 * Gets the state value for the specified key for this table.
+		 * @instance
+		 * @param {string} key - The key to get the value for.
+		 * @returns {(*|null)}
+		 */
+		get: function(key){
+			return JSON.parse(localStorage.getItem(this.key + ':' + key));
+		},
+		/**
+		 * Sets the state value for the specified key for this table.
+		 * @instance
+		 * @param {string} key - The key to set the value for.
+		 * @param {*} data - The value to store for the key. This value must be JSON.stringify friendly.
+		 */
+		set: function(key, data){
+			localStorage.setItem(this.key + ':' + key, JSON.stringify(data));
+		},
+		/**
+		 * Clears the state value for the specified key for this table.
+		 * @instance
+		 * @param {string} key - The key to clear the value for.
+		 */
+		remove: function(key){
+			localStorage.removeItem(this.key + ':' + key);
+		},
+		/**
+		 * Executes the {@link FooTable.Component#readState} function on all components.
+		 * @instance
+		 */
+		read: function(){
+			this.ft.execute(false, true, 'readState');
+		},
+		/**
+		 * Executes the {@link FooTable.Component#writeState} function on all components.
+		 * @instance
+		 */
+		write: function(){
+			this.ft.execute(false, true, 'writeState');
+		},
+		/**
+		 * Executes the {@link FooTable.Component#clearState} function on all components.
+		 * @instance
+		 */
+		clear: function(){
+			this.ft.execute(false, true, 'clearState');
+		},
+		/**
+		 * Generates a unique identifier for the current {@link FooTable.Table} if one is not supplied through the options.
+		 * This value is a combination of the url hash and either the element ID or an incremented global int value.
+		 * @instance
+		 * @returns {*}
+		 * @private
+		 */
+		_uid: function(){
+			var id = this.ft.$el.attr('id');
+			return _url_hash + '_' + (F.is.string(id) ? id : ++_uid);
+		}
+	});
+
+	F.components.register('state', F.State, 700);
+
+})(jQuery, FooTable);
+(function(F){
+
+	/**
+	 * This method is called from the {@link FooTable.State#read} method and allows a component to retrieve its' stored state.
+	 * @instance
+	 * @protected
+	 * @function
+	 */
+	F.Component.prototype.readState = function(){};
+
+	/**
+	 * This method is called from the {@link FooTable.State#write} method and allows a component to write its' current state to the store.
+	 * @instance
+	 * @protected
+	 * @function
+	 */
+	F.Component.prototype.writeState = function(){};
+
+	/**
+	 * This method is called from the {@link FooTable.State#clear} method and allows a component to clear any stored state.
+	 * @instance
+	 * @protected
+	 * @function
+	 */
+	F.Component.prototype.clearState = function(){};
+
+})(FooTable);
+(function(F){
+
+	/**
+	 * An object containing the state options for the plugin. Added by the {@link FooTable.State} component.
+	 * @type {object}
+	 * @prop {boolean} enabled=false - Whether or not to allow state to be stored for the table. This overrides the individual component enable options.
+	 * @prop {boolean} filtering=true - Whether or not to allow the filtering state to be stored.
+	 * @prop {boolean} paging=true - Whether or not to allow the filtering state to be stored.
+	 * @prop {boolean} sorting=true - Whether or not to allow the filtering state to be stored.
+	 * @prop {string} key=null - The unique key to use to store the table's data.
+	 */
+	F.Defaults.prototype.state = {
+		enabled: false,
+		filtering: true,
+		paging: true,
+		sorting: true,
+		key: null
+	};
+
+})(FooTable);
+(function(F){
+
+	if (!F.Filtering) return;
+
+	/**
+	 * Allows the filtering component to retrieve its' stored state.
+	 */
+	F.Filtering.prototype.readState = function(){
+		if (this.ft.state.filtering){
+			var state = this.ft.state.get('filtering');
+			if (F.is.hash(state) && !F.is.emptyArray(state.filters)){
+				this.filters = this.ensure(state.filters);
+			}
+		}
+	};
+
+	/**
+	 * Allows the filtering component to write its' current state to the store.
+	 */
+	F.Filtering.prototype.writeState = function(){
+		if (this.ft.state.filtering) {
+			var filters = F.arr.map(this.filters, function (f) {
+				return {
+					name: f.name,
+					query: f.query instanceof F.Query ? f.query.val() : f.query,
+					columns: F.arr.map(f.columns, function (c) {
+						return c.name;
+					}),
+					hidden: f.hidden,
+					space: f.space,
+					connectors: f.connectors,
+					ignoreCase: f.ignoreCase
+				};
+			});
+			this.ft.state.set('filtering', {filters: filters});
+		}
+	};
+
+	/**
+	 * Allows the filtering component to clear any stored state.
+	 */
+	F.Filtering.prototype.clearState = function(){
+		if (this.ft.state.filtering) {
+			this.ft.state.remove('filtering');
+		}
+	};
+
+})(FooTable);
+(function(F){
+
+	if (!F.Paging) return;
+
+	/**
+	 * Allows the paging component to retrieve its' stored state.
+	 */
+	F.Paging.prototype.readState = function(){
+		if (this.ft.state.paging) {
+			var state = this.ft.state.get('paging');
+			if (F.is.hash(state)) {
+				this.current = state.current;
+				this.size = state.size;
+			}
+		}
+	};
+
+	/**
+	 * Allows the paging component to write its' current state to the store.
+	 */
+	F.Paging.prototype.writeState = function(){
+		if (this.ft.state.paging) {
+			this.ft.state.set('paging', {
+				current: this.current,
+				size: this.size
+			});
+		}
+	};
+
+	/**
+	 * Allows the paging component to clear any stored state.
+	 */
+	F.Paging.prototype.clearState = function(){
+		if (this.ft.state.paging) {
+			this.ft.state.remove('paging');
+		}
+	};
+
+})(FooTable);
+(function(F){
+
+	if (!F.Sorting) return;
+
+	/**
+	 * Allows the sorting component to retrieve its' stored state.
+	 */
+	F.Sorting.prototype.readState = function(){
+		if (this.ft.state.sorting) {
+			var state = this.ft.state.get('sorting');
+			if (F.is.hash(state)) {
+				var column = this.ft.columns.get(state.column);
+				if (column instanceof F.Column) {
+					this.column = column;
+					this.column.direction = state.direction;
+				}
+			}
+		}
+	};
+
+	/**
+	 * Allows the sorting component to write its' current state to the store.
+	 */
+	F.Sorting.prototype.writeState = function(){
+		if (this.ft.state.sorting && this.column instanceof F.Column){
+			this.ft.state.set('sorting', {
+				column: this.column.name,
+				direction: this.column.direction
+			});
+		}
+	};
+
+	/**
+	 * Allows the sorting component to clear any stored state.
+	 */
+	F.Sorting.prototype.clearState = function(){
+		if (this.ft.state.sorting) {
+			this.ft.state.remove('sorting');
+		}
+	};
+
+})(FooTable);
+(function(F){
+
+	// hook into the _construct method so we can add the state property to the table.
+	F.Table.extend('_construct', function(ready){
+		this.state = this.use(FooTable.State);
+		this._super(ready);
+	});
+
+	// hook into the _preinit method so we can trigger a plugin wide read state operation.
+	F.Table.extend('_preinit', function(){
+		var self = this;
+		return self._super().then(function(){
+			if (self.state.enabled){
+				self.state.read();
+			}
+		});
+	});
+
+	// hook into the draw method so we can trigger a plugin wide write state operation.
+	F.Table.extend('draw', function(){
+		var self = this;
+		return self._super().then(function(){
+			if (self.state.enabled){
+				self.state.write();
+			}
+		});
+	});
 
 })(FooTable);

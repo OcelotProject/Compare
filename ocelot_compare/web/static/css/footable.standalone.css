@@ -1,6 +1,6 @@
 /*
 * FooTable v3 - FooTable is a jQuery plugin that aims to make HTML tables on smaller devices look awesome.
-* @version 3.0.8
+* @version 3.1.4
 * @link http://fooplugins.com
 * @copyright Steven Usher & Brad Vincent 2015
 * @license Released under the GPLv3 license.
@@ -514,6 +514,9 @@ table.footable-details {
 table.footable-details {
 	margin-bottom: 0;
 }
+table.footable-hide-fouc {
+	display: none;
+}
 table > tbody > tr > td > span.footable-toggle {
 	margin-right: 8px;
 	opacity: 0.3;
@@ -667,6 +670,10 @@ table.footable > tbody > tr.footable-detail-row > th {
 .fooicon-cog:before {
 	content: "\f013";
 }
+.fooicon-stats:before {
+	content: "\f080";
+}
+
 table.footable > thead > tr.footable-filtering > th {
 	border-bottom-width: 1px;
 	font-weight: normal;
@@ -744,6 +751,16 @@ td.footable-sortable.footable-desc > span.fooicon,
 th.footable-sortable.footable-desc > span.fooicon {
 	opacity: 1;
 }
+/* hides the sort icons when sorting is not allowed */
+table.footable-sorting-disabled td.footable-sortable.footable-asc > span.fooicon,
+table.footable-sorting-disabled td.footable-sortable.footable-desc > span.fooicon,
+table.footable-sorting-disabled td.footable-sortable:hover > span.fooicon,
+table.footable-sorting-disabled th.footable-sortable.footable-asc > span.fooicon,
+table.footable-sorting-disabled th.footable-sortable.footable-desc > span.fooicon,
+table.footable-sorting-disabled th.footable-sortable:hover > span.fooicon {
+	opacity: 0;
+	visibility: hidden;
+}
 table.footable > tfoot > tr.footable-paging > td > ul.pagination {
 	margin: 10px 0 0 0;
 }
@@ -769,8 +786,26 @@ ul.pagination > li.footable-page.visible {
 	display: inline;
 }
 td.footable-editing {
+	width: 90px;
+	max-width: 90px;
+}
+table.footable-editing-no-edit td.footable-editing,
+table.footable-editing-no-delete td.footable-editing,
+table.footable-editing-no-view td.footable-editing {
 	width: 70px;
 	max-width: 70px;
+}
+table.footable-editing-no-edit.footable-editing-no-delete td.footable-editing,
+table.footable-editing-no-edit.footable-editing-no-view td.footable-editing,
+table.footable-editing-no-delete.footable-editing-no-view td.footable-editing {
+	width: 50px;
+	max-width: 50px;
+}
+table.footable-editing-no-edit.footable-editing-no-delete.footable-editing-no-view td.footable-editing,
+table.footable-editing-no-edit.footable-editing-no-delete.footable-editing-no-view th.footable-editing {
+	width: 0;
+	max-width: 0;
+	display: none !important;
 }
 table.footable-editing-right td.footable-editing,
 table.footable-editing-right tr.footable-editing {
@@ -784,7 +819,8 @@ table.footable-editing button.footable-add,
 table.footable-editing button.footable-hide,
 table.footable-editing-show button.footable-show,
 table.footable-editing.footable-editing-always-show button.footable-show,
-table.footable-editing.footable-editing-always-show button.footable-hide {
+table.footable-editing.footable-editing-always-show button.footable-hide,
+table.footable-editing.footable-editing-always-show.footable-editing-no-add tr.footable-editing {
 	display: none;
 }
 table.footable-editing.footable-editing-show button.footable-add,
