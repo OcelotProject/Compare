@@ -10,10 +10,33 @@
 
 <p><a href="{{ model['log_url'] }}">Log messages</a></p>
 
-{% if given %}
-<p>Pass</p>
-{% else %}
 <h1>Exchanges</h1>
+{% if exchanges %}
+<table class="table" data-filtering="true" data-sorting="true">
+    <thead>
+        <tr>
+            <th data-breakpoints="xs">Name</th>
+            <th data-breakpoints="xs">Location</th>
+            <th data-type="html" data-breakpoints="xs">Equal</th>
+            <th data-breakpoints="xs" data-sort-ignore="true">Model Amount</th>
+            <th data-breakpoints="xs" data-sort-ignore="true">Given Amount</th>
+            <th data-breakpoints="xs">Unit</th>
+            <th data-breakpoints="xs">Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for elem in exchanges %}
+        <tr>
+            {% for o in elem[:2] %}<td>{{ o }}</td>
+            {% endfor %}
+            <td>{% if elem[2] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
+            {% for o in elem[3:] %}<td>{{ o }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
 <table class="table" data-filtering="true" data-sorting="true">
     <thead>
         <tr>

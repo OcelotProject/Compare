@@ -27,7 +27,8 @@ def index():
 def detail(name, product, location):
     model = cache.run[(name, product, location)]
     given = cache.given.get((name, product, location))
-    return render_template('detail.html', given=given, model=model)
+    exchanges = compare_exchanges(model, given) if given else None
+    return render_template('detail.html', given=given, model=model, exchanges=exchanges)
 
 @app.route("/log/<name>/<product>/<location>/")
 def log_detail(name, product, location):
