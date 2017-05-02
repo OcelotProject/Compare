@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import isclose
 
 
 def consolidate(lst):
@@ -6,7 +6,9 @@ def consolidate(lst):
     for x, y in lst:
         if x:
             if y:
-                results.append((x[0], x[1], np.isclose(x[2], y[2]), x[2], y[2], x[3], x[4]))
+                results.append((x[0], x[1],
+                                isclose(x[2], y[2], rtol=1e-04, atol=1e-06),
+                                x[2], y[2], x[3], x[4]))
             else:
                 results.append((x[0], x[1], False, x[2], 0, x[3], x[4]))
         else:
