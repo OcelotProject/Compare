@@ -2,9 +2,15 @@
 
 {% block body %}
 <h1>Ocelot model run activity dataset</h1>
-<h2>Name: {{ model['name'] }}</h2>
-<h2>Reference product: {{ model['reference product'] }}</h2>
-<h2>Location: {{ model['location'] }}</h2>
+{% if similarity %}<h2>Similarity score: {{ similarity }}</h2>{% endif %}
+<p>Name: {{ model['name'] }}</p>
+<p>Reference product: {{ model['reference product'] }}</p>
+<p>Location: {{ model['location'] }}</p>
+
+<h2>Files</h2>
+<p>Model: <a href="{{ model['raw_url'] }}">{{ model['filepath'] }}</a></p>
+{% if given %}<p>Given: <a href="{{ given['raw_url'] }}">{{ given['filepath'] }}</a></p>{% endif %}
+
 
 <p>Activity {% if not given %}not {% endif %}found in reference database</p>
 
@@ -16,7 +22,7 @@
     <thead>
         <tr>
             <th data-breakpoints="xs">Name</th>
-            <th data-breakpoints="xs">Location</th>
+            <th data-breakpoints="xs">Location/Subcategory</th>
             <th data-type="html" data-breakpoints="xs">Equal</th>
             <th data-breakpoints="xs" data-sort-ignore="true">Model Amount</th>
             <th data-breakpoints="xs" data-sort-ignore="true">Given Amount</th>
@@ -63,6 +69,7 @@
 </table>
 {% endif %}
 
+{% if model['parameters'] %}
 <h1>Parameters</h1>
 <table class="table" data-filtering="true" data-sorting="true">
     <thead>
@@ -85,7 +92,8 @@
         </tr>
         {% endfor %}
     </tbody>
-</table>
+</table>{% else %}<h1>No parameters</h1>
+{% endif %}
 
 <script type="text/javascript">
 jQuery(function($){

@@ -3,6 +3,7 @@ from .comparison import *
 from .filesystem import load_detailed_log
 from flask import Flask, render_template
 import os
+from json2html import *
 
 
 static = os.path.join(os.path.dirname(__file__), "web", "static")
@@ -27,8 +28,9 @@ def index():
 def detail(name, product, location):
     model = cache.run[(name, product, location)]
     given = cache.given.get((name, product, location))
+    similarity = similarity_index(model, given) if given else 0
     exchanges = compare_exchanges(model, given) if given else None
-    return render_template('detail.html', given=given, model=model, exchanges=exchanges)
+    return render_template('detail.html', given=given, model=model, exchanges=exchanges, similarity=similarity)
 
 @app.route("/log/<name>/<product>/<location>/")
 def log_detail(name, product, location):
@@ -40,3 +42,17 @@ def log_detail(name, product, location):
                 if line['dataset']['filename'] == filename)
 
     return render_template('log_detail.html', ds=ds, messages=messages)
+
+@app.route("/model-raw/<name>/<product>/<location>/")
+def model_raw(name, product, location):
+    ds = cache.run.get((name, product, location))
+    if not ds:
+        404
+    return json2html.convert(json=ds)
+
+@app.route("/given-raw/<name>/<product>/<location>/")
+def given_raw(name, product, location):
+    ds = cache.given.get((name, product, location))
+    if not ds:
+        404
+    return json2html.convert(json=ds)

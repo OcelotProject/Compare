@@ -7,6 +7,7 @@ def prepare_loaded_data():
     add_given_reference_product()
     cache.given = convert_to_dict(cache.given)
     cache.run = convert_to_dict(cache.run)
+    add_locations()
 
 
 def add_given_reference_product():
@@ -44,3 +45,35 @@ def add_urls_if_needed():
                 product=ds['reference product'],
                 location=ds['location']
             )
+            ds['raw_url'] = url_for(
+                'model_raw',
+                name=ds['name'],
+                product=ds['reference product'],
+                location=ds['location']
+            )
+        for ds in cache.given.values():
+            ds['raw_url'] = url_for(
+                'given_raw',
+                name=ds['name'],
+                product=ds['reference product'],
+                location=ds['location']
+            )
+
+
+def add_locations():
+    mapping = {x['code']: x['location'] for x in cache.run.values()}
+    for ds in cache.run.values():
+        for exc in ds['exchanges']:
+            try:
+                exc['location'] = mapping[exc['code']]
+            except KeyError:
+                exc['location'] = None
+
+    mapping = {x['id']: x['location'] for x in cache.given.values()}
+    for ds in cache.given.values():
+        for exc in ds['exchanges']:
+            try:
+                exc['location'] = mapping[exc['activity link']]
+            except KeyError:
+                exc['location'] = None
+

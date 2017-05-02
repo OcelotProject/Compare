@@ -42,6 +42,7 @@ setup(
         'docopt',
         'docutils',
         'jinja2',
+        'json2html',
         'lxml',
         'numpy',
         'pandas',

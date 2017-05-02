@@ -17,8 +17,13 @@ def consolidate(lst):
 
 
 def compare_exchanges(first, second):
-    exchanges = lambda x: sorted([(e['name'], e.get('subcategory', ''), e['amount'], e['unit'], e['type'])
-                                  for e in x['exchanges']])
+    exchanges = lambda x: sorted([(
+        e['name'],
+        e.get('location') or e.get('subcompartment', ''),
+        e['amount'],
+        e['unit'],
+        e['type']
+    ) for e in x['exchanges']])
 
     results = []
     first, second = exchanges(first), exchanges(second)
