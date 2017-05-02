@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div>
+<h1>Datasets</h1>
+<table class="table" data-paging="true" data-filtering="true" data-sorting="true">
+    <thead>
+        <tr>
+            <th data-type="html" data-sort-use="text" data-breakpoints="xs">Activity</th>
+            <th data-breakpoints="xs">Product</th>
+            <th data-breakpoints="xs">Location</th>
+            <th data-breakpoints="xs" data-type="number"># Exchanges</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ds in data %}
+        <tr>
+            <td><a href="{{ ds['url'] }}">{{ ds['name'] }}</a></td>
+            <td>{{ ds['reference product'] }}</td>
+            <td>{{ ds['location'] }}</td>
+            <td>{{ ds['exchanges']|length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script type="text/javascript">
+jQuery(function($){
+    $('.table').footable();
+});
+</script>
+{% endblock %}

@@ -64,6 +64,9 @@ def add_locations():
     mapping = {x['code']: x['location'] for x in cache.run.values()}
     for ds in cache.run.values():
         for exc in ds['exchanges']:
+            if exc['type'] == 'reference product':
+                exc['location'] = ds['location']
+                continue
             try:
                 exc['location'] = mapping[exc['code']]
             except KeyError:
@@ -72,6 +75,9 @@ def add_locations():
     mapping = {x['id']: x['location'] for x in cache.given.values()}
     for ds in cache.given.values():
         for exc in ds['exchanges']:
+            if exc['type'] == 'reference product':
+                exc['location'] = ds['location']
+                continue
             try:
                 exc['location'] = mapping[exc['activity link']]
             except KeyError:

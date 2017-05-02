@@ -29,6 +29,10 @@ def compare_exchanges(first, second):
     first, second = exchanges(first), exchanges(second)
     candidate_f, candidate_s = None, None
 
+    print("Exchanges from first:")
+    for x in first:
+        print(x)
+
     while first or second:
         if not candidate_f:
             if first:
@@ -40,6 +44,10 @@ def compare_exchanges(first, second):
                 candidate_s = second.pop(0)
             else:
                 candidate_s = None
+
+        print("Loop:")
+        print("First:", candidate_f)
+        print("Second:", candidate_s)
 
         if candidate_f and candidate_s:
             if (candidate_f[0] == candidate_s[0]) and  (candidate_f[1] == candidate_s[1]):

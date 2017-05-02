@@ -1,9 +1,10 @@
 from . import cache
 from .comparison import *
 from .filesystem import load_detailed_log
-from flask import Flask, render_template
-import os
+from flask import Flask, render_template, request
 from json2html import *
+from time import time
+import os
 
 
 static = os.path.join(os.path.dirname(__file__), "web", "static")
@@ -11,11 +12,15 @@ templates = os.path.join(os.path.dirname(__file__), "web", "templates")
 app = Flask("oc", static_folder=static, template_folder=templates)
 
 
-@app.route("/")
-def index():
+@app.route("/compare")
+def compare():
     if not (cache.given and cache.run):
         raise ValueError("Must populate given reference and run caches first")
+
+    start = time()
     add_urls_if_needed()
+    print("add_urls_if_needed", time() - start)
+
     kwargs = {
         "hv_production": skipped_high_voltage_production_mixes(),
         "missing_given": missing_given(),
@@ -23,6 +28,14 @@ def index():
         "in_both": in_both(),
     }
     return render_template("index.html", **kwargs)
+
+@app.route("/show")
+def show():
+    if not cache.run:
+        raise ValueError("Must populate run cache first")
+
+    add_urls_if_needed()
+    return render_template("show.html", data=cache.run.values())
 
 @app.route("/detail/<name>/<product>/<location>/")
 def detail(name, product, location):
