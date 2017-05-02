@@ -1,5 +1,5 @@
 from .. import cache
-from flask import url_for
+from urllib.parse import urlparse, quote
 
 
 def prepare_loaded_data():
@@ -28,35 +28,34 @@ def convert_to_dict(lst):
             for o in lst}
 
 
-def add_urls_if_needed():
+def add_urls_if_needed(url):
     """Add URLs to model run output datasets if not present"""
     ds = next(iter(cache.run.values()))
     if 'url' not in ds:
+        pr = urlparse(url)
+        base = pr.scheme + "://" + pr.netloc + "/"
+
         for ds in cache.run.values():
-            ds['url'] = url_for(
-                'detail',
-                name=ds['name'],
-                product=ds['reference product'],
-                location=ds['location']
+            ds['url'] = (
+                base + 'detail/' + quote(ds['name']) + '/' +
+                quote(ds['reference product']) + '/' +
+                quote(ds['location']) + '/'
             )
-            ds['log_url'] = url_for(
-                'log_detail',
-                name=ds['name'],
-                product=ds['reference product'],
-                location=ds['location']
+            ds['log_url'] = (
+                base + 'log/' + quote(ds['name']) + '/' +
+                quote(ds['reference product']) + '/' +
+                quote(ds['location']) + '/'
             )
-            ds['raw_url'] = url_for(
-                'model_raw',
-                name=ds['name'],
-                product=ds['reference product'],
-                location=ds['location']
+            ds['raw_url'] = (
+                base + 'model-raw/' + quote(ds['name']) + '/' +
+                quote(ds['reference product']) + '/' +
+                quote(ds['location']) + '/'
             )
         for ds in cache.given.values():
-            ds['raw_url'] = url_for(
-                'given_raw',
-                name=ds['name'],
-                product=ds['reference product'],
-                location=ds['location']
+            ds['raw_url'] = (
+                base + 'given-raw/' + quote(ds['name']) + '/' +
+                quote(ds['reference product']) + '/' +
+                quote(ds['location']) + '/'
             )
 
 

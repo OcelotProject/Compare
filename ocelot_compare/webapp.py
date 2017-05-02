@@ -18,7 +18,7 @@ def compare():
         raise ValueError("Must populate given reference and run caches first")
 
     start = time()
-    add_urls_if_needed()
+    add_urls_if_needed(request.url)
     print("add_urls_if_needed", time() - start)
 
     kwargs = {
@@ -34,7 +34,7 @@ def show():
     if not cache.run:
         raise ValueError("Must populate run cache first")
 
-    add_urls_if_needed()
+    add_urls_if_needed(request.url)
     return render_template("show.html", data=cache.run.values())
 
 @app.route("/detail/<name>/<product>/<location>/")
