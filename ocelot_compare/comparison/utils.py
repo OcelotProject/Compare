@@ -8,7 +8,7 @@ def prepare_loaded_data():
     cache.given = convert_to_dict(cache.given)
     cache.run = convert_to_dict(cache.run)
     add_locations()
-
+    add_filepaths()
 
 def add_given_reference_product():
     for ds in cache.given:
@@ -82,3 +82,18 @@ def add_locations():
             except KeyError:
                 exc['location'] = None
 
+def add_filepaths():
+    mapping = {x['code']: x['filepath'] for x in cache.run.values()}
+    for ds in cache.run.values():
+        for exc in ds['exchanges']:
+            if exc['type'] == 'reference product':
+                continue
+            try:
+                exc['filepath'] = mapping[exc['code']]
+            except KeyError:
+                pass
+        for exc in ds.get('suppliers', []):
+            try:
+                exc['filepath'] = mapping[exc['code']]
+            except KeyError:
+                pass

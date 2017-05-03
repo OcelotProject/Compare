@@ -3,7 +3,6 @@ from .comparison import *
 from .filesystem import load_detailed_log
 from flask import Flask, render_template, request
 from json2html import *
-from time import time
 import os
 
 
@@ -17,10 +16,7 @@ def compare():
     if not (cache.given and cache.run):
         raise ValueError("Must populate given reference and run caches first")
 
-    start = time()
     add_urls_if_needed(request.url)
-    print("add_urls_if_needed", time() - start)
-
     kwargs = {
         "hv_production": skipped_high_voltage_production_mixes(),
         "missing_given": missing_given(),

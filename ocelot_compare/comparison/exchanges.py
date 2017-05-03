@@ -61,6 +61,8 @@ def compare_exchanges(first, second):
                 candidate_s = None
         elif candidate_f:
             results.append((candidate_f, None))
+            candidate_f = None
         else:
             results.append((None, candidate_s))
+            candidate_s = None
     return consolidate(results)
