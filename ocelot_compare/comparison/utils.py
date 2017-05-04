@@ -34,6 +34,8 @@ def add_exchange_names_activities():
                     exc['activity'] = mapping[exc['activity link']]
                 except KeyError:
                     exc['activity'] = ''
+            elif exc['type'] == 'reference product':
+                exc['activity'] = ds['name']
 
     a_mapping = {x['code']: x['name'] for x in cache.run.values()}
     f_mapping = {x['code']: x['reference product'] for x in cache.run.values()}
@@ -45,6 +47,8 @@ def add_exchange_names_activities():
                     exc['name'] = f_mapping[exc['code']]
                 except KeyError:
                     exc['activity'] = ''
+            elif exc['type'] == 'reference product':
+                exc['activity'] = ds['name']
 
 
 def convert_to_dict(lst):
