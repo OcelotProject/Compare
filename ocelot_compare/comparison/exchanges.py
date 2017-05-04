@@ -6,19 +6,20 @@ def consolidate(lst):
     for x, y in lst:
         if x:
             if y:
-                results.append((x[0], x[1],
-                                isclose(x[2], y[2], rtol=1e-04, atol=1e-06),
-                                x[2], y[2], x[3], x[4]))
+                results.append((x[0], x[1], x[2],
+                                isclose(x[3], y[3], rtol=1e-04, atol=1e-06),
+                                x[3], y[3], x[4], x[5]))
             else:
-                results.append((x[0], x[1], False, x[2], 0, x[3], x[4]))
+                results.append((x[0], x[1], x[2], False, x[3], 0, x[4], x[5]))
         else:
-            results.append((y[0], y[1], False, 0, y[2], y[3], y[4]))
+            results.append((y[0], y[1], y[2], False, 0, y[3], y[4], y[5]))
     return results
 
 
 def compare_exchanges(first, second):
     exchanges = lambda x: sorted([(
         e['name'],
+        e.get('activity', ''),
         e.get('location') or e.get('subcompartment', ''),
         e['amount'],
         e['unit'],
@@ -28,10 +29,6 @@ def compare_exchanges(first, second):
     results = []
     first, second = exchanges(first), exchanges(second)
     candidate_f, candidate_s = None, None
-
-    print("Exchanges from first:")
-    for x in first:
-        print(x)
 
     while first or second:
         if not candidate_f:
@@ -44,10 +41,6 @@ def compare_exchanges(first, second):
                 candidate_s = second.pop(0)
             else:
                 candidate_s = None
-
-        print("Loop:")
-        print("First:", candidate_f)
-        print("Second:", candidate_s)
 
         if candidate_f and candidate_s:
             if (candidate_f[0] == candidate_s[0]) and  (candidate_f[1] == candidate_s[1]):

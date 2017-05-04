@@ -7,8 +7,10 @@ def prepare_loaded_data():
     add_given_reference_product()
     cache.given = convert_to_dict(cache.given)
     cache.run = convert_to_dict(cache.run)
+    add_exchange_names_activities()
     add_locations()
     add_filepaths()
+
 
 def add_given_reference_product():
     for ds in cache.given:
@@ -21,6 +23,28 @@ def add_given_reference_product():
             if not len(rps) == 1:
                 raise ValueError("Unallocated dataset:", ds['filepath'])
         ds['reference product'] = rps[0]['name']
+
+
+def add_exchange_names_activities():
+    mapping = {x['id']: x['name'] for x in cache.given.values()}
+    for ds in cache.given.values():
+        for exc in ds['exchanges']:
+            if 'technosphere' in exc['type']:
+                try:
+                    exc['activity'] = mapping[exc['activity link']]
+                except KeyError:
+                    exc['activity'] = ''
+
+    a_mapping = {x['code']: x['name'] for x in cache.run.values()}
+    f_mapping = {x['code']: x['reference product'] for x in cache.run.values()}
+    for ds in cache.run.values():
+        for exc in ds['exchanges']:
+            if 'technosphere' in exc['type']:
+                try:
+                    exc['activity'] = a_mapping[exc['code']]
+                    exc['name'] = f_mapping[exc['code']]
+                except KeyError:
+                    exc['activity'] = ''
 
 
 def convert_to_dict(lst):

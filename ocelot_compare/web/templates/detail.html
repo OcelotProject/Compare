@@ -21,7 +21,7 @@
 <table class="table" data-filtering="true" data-sorting="true">
     <thead>
         <tr>
-            <th data-breakpoints="xs">Name</th>
+            <th data-breakpoints="xs">Flow</th>
             <th data-breakpoints="xs">Location/Subcategory</th>
             <th data-type="html" data-breakpoints="xs">Equal</th>
             <th data-breakpoints="xs" data-sort-ignore="true">Model Amount</th>
@@ -33,10 +33,10 @@
     <tbody>
         {% for elem in exchanges %}
         <tr>
-            {% for o in elem[:2] %}<td>{{ o }}</td>
-            {% endfor %}
-            <td>{% if elem[2] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
-            {% for o in elem[3:] %}<td>{{ o }}</td>
+            <td>{{ elem[0] }}</td>
+            <td>{{ elem[2] }}</td>
+            <td>{% if elem[3] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
+            {% for o in elem[4:] %}<td>{{ o }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
