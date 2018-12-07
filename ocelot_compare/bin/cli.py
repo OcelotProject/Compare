@@ -3,8 +3,8 @@
 """Ocelot-compare CLI interface.
 
 Usage:
-  compare-cli compare <run_id> <ref_dirpath> [--debug]
-  compare-cli show <run_id> [--debug]
+  ocelot-compare compare <run_id> <ref_dirpath> [--debug]
+  ocelot-compare show <run_id> [--debug]
 
 Options:
   --list             List the updates needed, but don't do anything
