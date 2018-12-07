@@ -1,5 +1,6 @@
 from .. import cache
 from .indices import similarity_index
+import numpy as np
 
 
 def missing_given():
@@ -19,3 +20,14 @@ def in_both():
         if k in cache.given:
             v['similarity'] = similarity_index(v, cache.given[k])
             yield v
+
+
+def calculate_similarities():
+    data = []
+    for k, v in cache.run.items():
+        if k in cache.given:
+            similarity = similarity_index(v, cache.given[k])
+            v['similarity'] = similarity
+            data.append(similarity)
+
+    cache.similarity = np.average(data)

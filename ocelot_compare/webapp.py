@@ -17,11 +17,13 @@ def compare():
         raise ValueError("Must populate given reference and run caches first")
 
     add_urls_if_needed(request.url)
+    calculate_similarities()
     kwargs = {
         "hv_production": skipped_high_voltage_production_mixes(),
         "missing_given": missing_given(),
         "missing_model": missing_model(),
         "in_both": in_both(),
+        "similarity": cache.similarity,
     }
     return render_template("index.html", **kwargs)
 
