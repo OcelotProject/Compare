@@ -1,15 +1,16 @@
 from numpy import isclose
+from collections import defaultdict
+from itertools import zip_longest
 
 
 def consolidate(lst):
     results = []
     for x, y in lst:
-        if x:
-            if y:
-                results.append((x[0], x[1], x[2],
-                                isclose(x[3], y[3], rtol=1e-04, atol=1e-06),
-                                x[3], y[3], x[4], x[5]))
-            else:
+        if x and y:
+            results.append((x[0], x[1], x[2],
+                            isclose(x[3], y[3], rtol=1e-04, atol=1e-06),
+                            x[3], y[3], x[4], x[5]))
+        elif x:
                 results.append((x[0], x[1], x[2], False, x[3], 0, x[4], x[5]))
         else:
             results.append((y[0], y[1], y[2], False, 0, y[3], y[4], y[5]))
@@ -26,36 +27,19 @@ def compare_exchanges(first, second):
         e['type']
     ) for e in x['exchanges']])
 
+    first_exchanges = defaultdict(list)
+    for exc in exchanges(first):
+        first_exchanges[exc[:3]].append(exc)
+
+    second_exchanges = defaultdict(list)
+    for exc in exchanges(second):
+        second_exchanges[exc[:3]].append(exc)
+
+    all_keys = sorted(set(first_exchanges).union(set(second_exchanges)))
+
     results = []
-    first, second = exchanges(first), exchanges(second)
-    candidate_f, candidate_s = None, None
+    for key in all_keys:
+        for x, y in zip_longest(first_exchanges[key], second_exchanges[key]):
+            results.append((x, y))
 
-    while first or second:
-        if not candidate_f:
-            if first:
-                candidate_f = first.pop(0)
-            else:
-                candidate_f = None
-        if not candidate_s:
-            if second:
-                candidate_s = second.pop(0)
-            else:
-                candidate_s = None
-
-        if candidate_f and candidate_s:
-            if (candidate_f[0] == candidate_s[0]) and  (candidate_f[1] == candidate_s[1]):
-                results.append((candidate_f, candidate_s))
-                candidate_f, candidate_s = None, None
-            elif candidate_f < candidate_s:
-                results.append((candidate_f, None))
-                candidate_f = None
-            else:
-                results.append((None, candidate_s))
-                candidate_s = None
-        elif candidate_f:
-            results.append((candidate_f, None))
-            candidate_f = None
-        else:
-            results.append((None, candidate_s))
-            candidate_s = None
     return consolidate(results)
