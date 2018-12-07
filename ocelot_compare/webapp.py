@@ -39,7 +39,7 @@ def show():
 def detail(name, product, location):
     model = cache.run[(name, product, location)]
     given = cache.given.get((name, product, location))
-    similarity = similarity_index(model, given) if given else 0
+    similarity = similarity_index(model, given) if given else None
     exchanges = compare_exchanges(model, given) if given else None
     return render_template('detail.html', given=given, model=model, exchanges=exchanges, similarity=similarity)
 

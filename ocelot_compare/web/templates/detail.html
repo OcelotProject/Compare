@@ -2,7 +2,7 @@
 
 {% block body %}
 <h1>Ocelot model run activity dataset</h1>
-{% if similarity %}<h2>Similarity score: {{ similarity }}</h2>{% endif %}
+{% if similarity is not none %}<h2>Similarity score: {{ similarity }}</h2>{% endif %}
 <p>Name: {{ model['name'] }}</p>
 <p>Reference product: {{ model['reference product'] }}</p>
 <p>Location: {{ model['location'] }}</p>
@@ -21,6 +21,7 @@
 <table class="table" data-filtering="true" data-sorting="true">
     <thead>
         <tr>
+            <th data-breakpoints="xs">Activity</th>
             <th data-breakpoints="xs">Flow</th>
             <th data-breakpoints="xs">Location/Subcategory</th>
             <th data-type="html" data-breakpoints="xs">Equal</th>
@@ -33,6 +34,7 @@
     <tbody>
         {% for elem in exchanges %}
         <tr>
+            <td>{{ elem[1] }}</td>
             <td>{{ elem[0] }}</td>
             <td>{{ elem[2] }}</td>
             <td>{% if elem[3] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
