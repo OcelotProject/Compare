@@ -9,11 +9,11 @@ def consolidate(lst):
         if x and y:
             results.append((x[0], x[1], x[2],
                             isclose(x[3], y[3], rtol=1e-04, atol=1e-06),
-                            x[3], y[3], x[4], x[5]))
+                            x[3], y[3], x[3] / y[3], x[4], x[5]))
         elif x:
-                results.append((x[0], x[1], x[2], False, x[3], 0, x[4], x[5]))
+                results.append((x[0], x[1], x[2], False, x[3], 0, 0, x[4], x[5]))
         else:
-            results.append((y[0], y[1], y[2], False, 0, y[3], y[4], y[5]))
+            results.append((y[0], y[1], y[2], False, 0, y[3], 0, y[4], y[5]))
     return results
 
 

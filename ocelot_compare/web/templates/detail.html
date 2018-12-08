@@ -27,6 +27,7 @@
             <th data-type="html" data-breakpoints="xs">Equal</th>
             <th data-breakpoints="xs" data-sort-ignore="true">Model Amount</th>
             <th data-breakpoints="xs" data-sort-ignore="true">Given Amount</th>
+            <th data-breakpoints="xs">Ratio</th>
             <th data-breakpoints="xs">Unit</th>
             <th data-breakpoints="xs">Type</th>
         </tr>
@@ -38,7 +39,10 @@
             <td>{{ elem[0] }}</td>
             <td>{{ elem[2] }}</td>
             <td>{% if elem[3] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
-            {% for o in elem[4:] %}<td>{{ o }}</td>
+            <td>{{ "{0:0.4g}".format(elem[4]) }}</td>
+            <td>{{ "{0:0.4g}".format(elem[5]) }}</td>
+            <td>{{ "{0:0.4g}".format(elem[6]) }}</td>
+            {% for o in elem[7:] %}<td>{{ o }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
