@@ -32,6 +32,28 @@ def load_cached_datasets(data_path, io_version=None):
         return pickle.load(f)
 
 
+def load_last_compare():
+    """Get filepath to last comparison data directory"""
+    fp = os.path.join(ocelot_base_dir(), "config.json")
+    try:
+        config = json.load(open(fp))
+    except:
+        config = {}
+    return config['last_compare_path']
+
+
+def save_last_compare(path):
+    """Save filepath for last comparison data directory"""
+    fp = os.path.join(ocelot_base_dir(), "config.json")
+    try:
+        config = json.load(open(fp))
+    except:
+        config = {}
+    config['last_compare_path'] = os.path.abspath(path)
+    with open(fp, "w") as f:
+        json.dump(config, f)
+
+
 def load_model_run(run_id):
     """Return the model run data"""
     fp = os.path.join(

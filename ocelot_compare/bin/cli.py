@@ -3,7 +3,7 @@
 """Ocelot-compare CLI interface.
 
 Usage:
-  ocelot-compare compare <run_id> <ref_dirpath> [--debug]
+  ocelot-compare compare <run_id> [<ref_dirpath>] [--debug]
   ocelot-compare show <run_id> [--debug]
 
 Options:
@@ -16,13 +16,16 @@ from docopt import docopt
 from ocelot_compare import cache
 from ocelot_compare.comparison import prepare_loaded_data
 from ocelot_compare.filesystem import (
-    load_model_run,
-    load_cached_datasets,
     create_reference_result,
+    load_cached_datasets,
+    load_last_compare,
+    load_model_run,
+    save_last_compare,
 )
 from ocelot_compare.webapp import app
 import threading
 import webbrowser
+import json
 
 
 def run_flask_app(host="127.0.0.1", port="5000", debug=False, loc='compare'):
@@ -44,8 +47,15 @@ def main():
             cache.run_id = args['<run_id>']
             cache.run = load_model_run(cache.run_id)
             if args['compare']:
+                reference = args['<ref_dirpath>']
+                if not reference:
+                    reference = load_last_compare()
+                else:
+                    save_last_compare(reference)
+                if not reference:
+                    raise ValueError("No reference data directory provided")
                 try:
-                    cache.given = load_cached_datasets(args['<ref_dirpath>'])
+                    cache.given = load_cached_datasets(reference)
                 except AssertionError:
                     create_reference_result(args['<ref_dirpath>'])
                     cache.given = load_cached_datasets(args['<ref_dirpath>'])
