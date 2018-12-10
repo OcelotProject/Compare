@@ -22,7 +22,7 @@ def similarity_index(x, y):
     xd, yd = as_dict(x), as_dict(y)
     try:
         return sum(
-            isclose(v, (yd.get(k, 0) or 1), rtol=1e-04, atol=1e-06)
+            (v == yd.get(k, 0)) or isclose(v, (yd.get(k, 0) or 1), rtol=1e-04, atol=1e-06)
             for k, v in xd.items()
         ) / len(xd)
     except ZeroDivisionError:
