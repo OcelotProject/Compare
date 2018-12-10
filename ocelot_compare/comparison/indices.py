@@ -1,5 +1,5 @@
 from .. import cache
-from numpy import isclose
+from .similar import similar
 
 
 def skipped_high_voltage_production_mixes():
@@ -22,7 +22,7 @@ def similarity_index(x, y):
     xd, yd = as_dict(x), as_dict(y)
     try:
         return sum(
-            (v == yd.get(k, 0)) or isclose(v, (yd.get(k, 0) or 1), rtol=1e-04, atol=1e-06)
+            similar(v, yd.get(k))
             for k, v in xd.items()
         ) / len(xd)
     except ZeroDivisionError:

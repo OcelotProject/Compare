@@ -1,4 +1,4 @@
-from numpy import isclose
+from .similar import similar
 from collections import defaultdict
 from itertools import zip_longest
 
@@ -8,7 +8,7 @@ def consolidate(lst):
     for x, y in lst:
         if x and y:
             results.append((x[0], x[1], x[2],
-                            (x[3] == y[3]) or isclose(x[3] / (y[3] or 1), 1., rtol=1e-04, atol=1e-06),
+                            similar(x[3], y[3]),
                             x[3], y[3], x[3] / (y[3] or 1), x[4], x[5]))
         elif x:
                 results.append((x[0], x[1], x[2], False, x[3], 0, 0, x[4], x[5]))
