@@ -8,7 +8,7 @@ def consolidate(lst):
     for x, y in lst:
         if x and y:
             results.append((x[0], x[1], x[2],
-                            isclose(x[3], y[3], rtol=1e-04, atol=1e-06),
+                            isclose(x[3] / (y[3] or 1), 1., rtol=1e-04, atol=1e-06),
                             x[3], y[3], x[3] / (y[3] or 1), x[4], x[5]))
         elif x:
                 results.append((x[0], x[1], x[2], False, x[3], 0, 0, x[4], x[5]))
