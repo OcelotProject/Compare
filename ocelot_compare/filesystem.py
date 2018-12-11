@@ -27,7 +27,7 @@ def cache_for_data_dir(data_path, io_version=None):
 def load_cached_datasets(data_path, io_version=None):
     """Return the cached datasets for source directory ``data_path``."""
     fp = cache_for_data_dir(data_path, io_version)
-    assert os.path.isfile(fp)
+    assert os.path.isfile(fp), "Can't find cached data"
     with open(fp, "rb") as f:
         return pickle.load(f)
 
@@ -62,7 +62,7 @@ def load_model_run(run_id):
         run_id,
         "final-results.pickle"
     )
-    assert os.path.isfile(fp)
+    assert os.path.isfile(fp), "Can't find this model run"
     with open(fp, "rb") as f:
         return pickle.load(f)
 
@@ -75,7 +75,7 @@ def load_detailed_log(run_id):
         run_id,
         "detailed.log.json"
     )
-    assert os.path.isfile(fp)
+    assert os.path.isfile(fp), "Can't find detailed log file"
     for line in open(fp, encoding='utf-8'):
         yield json.loads(line)
 
