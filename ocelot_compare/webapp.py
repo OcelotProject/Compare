@@ -11,6 +11,12 @@ templates = os.path.join(os.path.dirname(__file__), "web", "templates")
 app = Flask("oc", static_folder=static, template_folder=templates)
 
 
+def order_dict(dictionary):
+    # https://stackoverflow.com/questions/22721579/sorting-a-nested-ordereddict-by-key-recursively
+    return {k: order_dict(v) if isinstance(v, dict) else v
+            for k, v in sorted(dictionary.items())}
+
+
 @app.route("/compare")
 def compare():
     if not (cache.given and cache.run):
@@ -64,6 +70,7 @@ def model_raw(name, product, location):
         ds = cache.run[(name, product, location)]
     except KeyError:
         abort(404)
+    return json2html.convert(json=order_dict(ds))
 
 @app.route("/given-raw/<name>/<product>/<location>/")
 def given_raw(name, product, location):
@@ -71,3 +78,4 @@ def given_raw(name, product, location):
         ds = cache.given[(name, product, location)]
     except KeyError:
         abort(404)
+    return json2html.convert(json=order_dict(ds))
