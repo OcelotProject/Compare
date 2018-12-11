@@ -1,7 +1,7 @@
 from . import cache
 from .comparison import *
 from .filesystem import load_detailed_log
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, abort
 from json2html import *
 import os
 
@@ -37,17 +37,21 @@ def show():
 
 @app.route("/detail/<name>/<product>/<location>/")
 def detail(name, product, location):
-    model = cache.run[(name, product, location)]
-    given = cache.given.get((name, product, location))
+    try:
+        model = cache.run[(name, product, location)]
+        given = cache.given.get((name, product, location))
+    except KeyError:
+        abort(404)
     similarity = similarity_index(model, given) if given else None
     exchanges = compare_exchanges(model, given) if given else None
     return render_template('detail.html', given=given, model=model, exchanges=exchanges, similarity=similarity)
 
 @app.route("/log/<name>/<product>/<location>/")
 def log_detail(name, product, location):
-    ds = cache.run.get((name, product, location))
-    if not ds:
-        404
+    try:
+        ds = cache.run[(name, product, location)]
+    except KeyError:
+        abort(404)
     filename = os.path.basename(ds['filepath'])
     messages = (line for line in load_detailed_log(cache.run_id)
                 if line['dataset']['filename'] == filename)
@@ -56,14 +60,14 @@ def log_detail(name, product, location):
 
 @app.route("/model-raw/<name>/<product>/<location>/")
 def model_raw(name, product, location):
-    ds = cache.run.get((name, product, location))
-    if not ds:
-        404
-    return json2html.convert(json=ds)
+    try:
+        ds = cache.run[(name, product, location)]
+    except KeyError:
+        abort(404)
 
 @app.route("/given-raw/<name>/<product>/<location>/")
 def given_raw(name, product, location):
-    ds = cache.given.get((name, product, location))
-    if not ds:
-        404
-    return json2html.convert(json=ds)
+    try:
+        ds = cache.given[(name, product, location)]
+    except KeyError:
+        abort(404)
