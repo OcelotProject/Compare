@@ -1,6 +1,6 @@
 from . import cache
 from .comparison import *
-from .filesystem import load_detailed_log
+from .filesystem import load_detailed_log, add_similarity_value
 from flask import Flask, render_template, request, abort
 from json2html import *
 import os
@@ -33,6 +33,7 @@ def compare():
         "missing_model": missing_model(),
         "in_both": in_both(),
         "similarity": cache.similarity,
+        "previous": add_similarity_value(),
     }
     return render_template("index.html", **kwargs)
 

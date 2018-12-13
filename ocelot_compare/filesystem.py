@@ -1,6 +1,8 @@
+from . import cache
 from ocelot.filesystem import __io_version__
 from ocelot.io import extract_directory
 import appdirs
+import datetime
 import hashlib
 import json
 import os
@@ -52,6 +54,24 @@ def save_last_compare(path):
     config['last_compare_path'] = os.path.abspath(path)
     with open(fp, "w") as f:
         json.dump(config, f)
+
+
+def add_similarity_value():
+    fp = os.path.join(ocelot_base_dir(), "config.json")
+    try:
+        config = json.load(open(fp))
+    except:
+        config = {}
+    similarities = config.get('similarities', [])
+    found = {x[0] for x in similarities}
+    if cache.run_id not in found:
+        config['similarities'] = (
+            [(cache.run_id, cache.similarity, datetime.datetime.now().isoformat())] +
+            similarities[:9]
+        )
+    with open(fp, "w") as f:
+        json.dump(config, f)
+    return similarities
 
 
 def load_model_run(run_id):

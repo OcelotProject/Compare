@@ -48,6 +48,29 @@
 
 <h1>Datasets in both</h1>
 <p>Average similarity: {{ similarity }}</p>
+{% if previous %}
+<h2>Previous similarities</h2>
+<table class="table" data-paging="false" data-filtering="false" data-sorting="true">
+    <thead>
+        <tr>
+            <th data-breakpoints="xs">Run id</th>
+            <th data-breakpoints="xs" data-type="number">Average similarity</th>
+            <th data-breakpoints="xs">Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in previous %}
+        <tr>
+            <td>{{ line[0] }}</td>
+            <td>{{ line[1] }}</td>
+            <td>{{ line[2] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h2>Datasets</h2>
 <table class="table" data-paging="true" data-filtering="true" data-sorting="true">
     <thead>
         <tr>
