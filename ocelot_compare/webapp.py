@@ -23,7 +23,10 @@ def compare():
         raise ValueError("Must populate given reference and run caches first")
 
     add_urls_if_needed(request.url)
-    calculate_similarities()
+    if not cache.calculated:
+        print("Calculating similarities")
+        calculate_similarities()
+        cache.calculated = True
     kwargs = {
         "hv_production": skipped_high_voltage_production_mixes(),
         "missing_given": missing_given(),

@@ -38,7 +38,7 @@
             <td>{{ elem[1] }}</td>
             <td>{{ elem[0] }}</td>
             <td>{{ elem[2] }}</td>
-            <td>{% if elem[3] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
+            <td>{% if elem[3] == 'missing' %}<i class="fa fa-question-circle" aria-hidden="true">{% elif elem[3] == 'roundoff' %}<i class="fa fa-asterisk" aria-hidden="true">{% elif elem[3] %}<i class="fa fa-check" aria-hidden="true"></i>{% else %}<i class="fa fa-times-circle" aria-hidden="true"></i>{% endif %}</td>
             <td>{{ "{0:0.4g}".format(elem[4]) }}</td>
             <td>{{ "{0:0.4g}".format(elem[5]) }}</td>
             <td>{{ "{0:0.4g}".format(elem[6]) }}</td>
