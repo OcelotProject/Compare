@@ -2,7 +2,8 @@ from . import cache
 from .comparison import *
 from .filesystem import load_detailed_log, add_similarity_value
 from flask import Flask, render_template, request, abort
-from json2html import *
+# from json2html import *
+from .html_table import json2html
 import os
 
 
@@ -74,7 +75,7 @@ def model_raw(name, product, location):
         ds = cache.run[(name, product, location)]
     except KeyError:
         abort(404)
-    return json2html.convert(json=order_dict(ds))
+    return json2html.convert(json=order_dict(ds), sort=True)
 
 @app.route("/given-raw/<name>/<product>/<location>/")
 def given_raw(name, product, location):
@@ -82,4 +83,4 @@ def given_raw(name, product, location):
         ds = cache.given[(name, product, location)]
     except KeyError:
         abort(404)
-    return json2html.convert(json=order_dict(ds))
+    return json2html.convert(json=order_dict(ds), sort=True)
