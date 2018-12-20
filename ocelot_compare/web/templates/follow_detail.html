@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Ocelot model run followed activity dataset</h1>
+<p>Name: {{ ds.name }}</p>
+<p>Reference product: {{ ds['reference product'] }}</p>
+<p>Location: {{ ds.location }}</p>
+<p>File path: {{ ds.filepath }}</p>
+
+<p>After function: {{ ds['function name'] }}</p>
+
+{{ table|safe }}
+{% endblock %}

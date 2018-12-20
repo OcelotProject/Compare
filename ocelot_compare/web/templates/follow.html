@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Ocelot model run followed activity dataset(s)</h1>
+<p>File path input: {{ ds['follow string'] }}</p>
+
+<h2>Dataset states</h2>
+{% for instance in states %}
+<h3>({{ instance.index }}) After {{ instance['function name'] }}</h3>
+    <ul>
+    {% for dataset in instance.datasets %}
+        <li><a href="{{ dataset.url }}">{{ dataset.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% endfor %}
+{% endblock %}

@@ -2,6 +2,11 @@
 
 {% block body %}
 <div>
+{% if follow %}
+    <h1>Followed dataset:</h1>
+    <p><a href="{{ follow.url }}">{{ follow.name }}</a></p>
+{% endif %}
+
 <h1>Datasets missing in reference result</h1>
 <table class="table" data-paging="true" data-filtering="true" data-sorting="true">
     <thead>

@@ -1,7 +1,7 @@
 from . import cache
 from .comparison import *
 from .filesystem import load_detailed_log, add_similarity_value
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, url_for
 # from json2html import *
 from .html_table import json2html
 import os
@@ -18,6 +18,12 @@ def order_dict(dictionary):
             for k, v in sorted(dictionary.items())}
 
 
+def prepare_follow_cache():
+    for i, instance in enumerate(cache.follow):
+        for j, ds in enumerate(instance['datasets']):
+            ds['url'] = url_for(".followed_detail", func_index=i, ds_index=j)
+
+
 @app.route("/compare")
 def compare():
     if not (cache.given and cache.run):
@@ -28,6 +34,13 @@ def compare():
         print("Calculating similarities")
         calculate_similarities()
         cache.calculated = True
+    if cache.follow:
+        follow = {
+            'url': url_for('.followed_index'),
+            'name': cache.follow[0]['datasets'][0]['name'],
+        }
+    else:
+        follow = None
     kwargs = {
         "hv_production": skipped_high_voltage_production_mixes(),
         "missing_given": missing_given(),
@@ -35,6 +48,7 @@ def compare():
         "in_both": in_both(),
         "similarity": cache.similarity,
         "previous": add_similarity_value(),
+        "follow": follow,
     }
     return render_template("index.html", **kwargs)
 
@@ -75,7 +89,7 @@ def model_raw(name, product, location):
         ds = cache.run[(name, product, location)]
     except KeyError:
         abort(404)
-    return json2html.convert(json=order_dict(ds), sort=True)
+    return json2html.convert(json=ds, sort=True)
 
 @app.route("/given-raw/<name>/<product>/<location>/")
 def given_raw(name, product, location):
@@ -83,4 +97,23 @@ def given_raw(name, product, location):
         ds = cache.given[(name, product, location)]
     except KeyError:
         abort(404)
-    return json2html.convert(json=order_dict(ds), sort=True)
+    return json2html.convert(json=ds, sort=True)
+
+@app.route("/followed/")
+def followed_index():
+    if not cache.follow_prepared:
+        prepare_follow_cache()
+        cache.follow_prepared = True
+    return render_template(
+        'follow.html', ds=cache.follow[0], states=cache.follow
+    )
+
+@app.route("/followed/<func_index>/<ds_index>/")
+def followed_detail(func_index, ds_index):
+    func_index, ds_index = int(func_index), int(ds_index)
+    ds = cache.follow[func_index]['datasets'][ds_index]
+    return render_template(
+        'follow_detail.html',
+        ds=ds,
+        table=json2html.convert(json=ds, sort=True)
+    )

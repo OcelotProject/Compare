@@ -86,6 +86,19 @@ def load_model_run(run_id):
     with open(fp, "rb") as f:
         return pickle.load(f)
 
+def load_followed_datasets(run_id):
+    dp = os.path.join(
+        ocelot_base_dir(), "model-runs",
+        run_id, "follow",
+    )
+    if not os.path.isdir(dp):
+        return False
+    else:
+        return sorted([
+            pickle.load(open(os.path.join(dp, name), "rb"))
+            for name in os.listdir(dp)
+            if name.endswith(".pickle")
+        ], key = lambda x: x['index'])
 
 def load_detailed_log(run_id):
     """Return the model run data"""

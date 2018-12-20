@@ -18,6 +18,7 @@ from ocelot_compare.comparison import prepare_loaded_data
 from ocelot_compare.filesystem import (
     create_reference_result,
     load_cached_datasets,
+    load_followed_datasets,
     load_last_compare,
     load_model_run,
     save_last_compare,
@@ -46,6 +47,7 @@ def main():
             print("Loading results")
             cache.run_id = args['<run_id>']
             cache.run = load_model_run(cache.run_id)
+            cache.follow = load_followed_datasets(cache.run_id)
             if args['compare']:
                 reference = args['<ref_dirpath>']
                 if not reference:
