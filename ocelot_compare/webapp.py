@@ -60,6 +60,17 @@ def show():
     add_urls_if_needed(request.url)
     return render_template("show.html", data=cache.run.values())
 
+
+def add_urls(exchanges):
+    def add_url_if_possible(line):
+        if all(line[:3]):
+            return (url_for(".detail", name=line[1], product=line[0], location=line[2]),) + line
+        else:
+            return (None,) + line
+
+    return [add_url_if_possible(line) for line in exchanges]
+
+
 @app.route("/detail/<name>/<product>/<location>/")
 def detail(name, product, location):
     try:
@@ -69,6 +80,8 @@ def detail(name, product, location):
         abort(404)
     similarity = similarity_index(model, given) if given else None
     exchanges = compare_exchanges(model, given) if given else None
+    if exchanges:
+        exchanges = add_urls(exchanges)
     return render_template('detail.html', given=given, model=model, exchanges=exchanges, similarity=similarity)
 
 @app.route("/log/<name>/<product>/<location>/")
